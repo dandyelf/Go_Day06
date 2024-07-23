@@ -4,6 +4,7 @@ import (
 	// "bytes"
 	"context"
 	"database/sql"
+	"log"
 
 	// "encoding/json"
 	"fmt"
@@ -24,18 +25,18 @@ type PostStore struct {
 
 type Entry struct {
 	bun.BaseModel `bun:"table:anomalies"`
-
-	ID        int64 `bun:"id,pk,autoincrement"`
-	SessionID string
-	Frequency float64
-	Timestamp time.Time
+	ID            int64     `bun:"id,pk,autoincrement"`
+	Title         string    `json:"title"`
+	Content       string    `json:"content"`
+	Author        string    `json:"author"`
+	PublishedAt   time.Time `json:"published_at"`
 }
 
 func (ps *PostStore) GetPosts(limit int, offset int) ([]types.Post, int, error) {
 	// from := offset*limit - limit + 1
-	list := []types.Post{{ID: 1, Author: "I'm", Content: "Go go gadjet", PublishedAt: time.Now()},
-		{ID: 2, Author: "I'm", Content: "Super hero RULEZZZZ", PublishedAt: time.Now()},
-		{ID: 3, Author: "I'm", Content: "I'm so sad, all stupid things, tsh...", PublishedAt: time.Now()},
+	list := []types.Post{{Author: "I'm", Content: "Go go gadjet", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "Super hero RULEZZZZ", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "I'm so sad, all stupid things, tsh...", PublishedAt: time.Now()},
 	}
 
 	return list, 3, nil
@@ -46,7 +47,8 @@ func (ps *PostStore) CheckAdminUser(User string, password string) bool {
 }
 
 func (ps *PostStore) AddPost(post types.Post) error {
-	return AddEntry("ad", 6.6, nil, time.Now())
+
+	return AddEntry(post)
 }
 
 // conf PgConf
@@ -87,23 +89,24 @@ func AddNewTable(logger *slog.Logger, drop bool) error {
 	if err != nil {
 		return fmt.Errorf("failed to create table: %w", err)
 	}
-	logger.Info("Table ready to use")
+	log.Println("Table ready to use")
 	return nil
 }
 
-func AddEntry(sessionId string, freq float64, logger *slog.Logger, time time.Time) error {
+func AddEntry(data types.Post) error {
 	if db == nil {
 		return fmt.Errorf("database connection is not initialized")
 	}
 	entry := &Entry{
-		SessionID: sessionId,
-		Frequency: freq,
-		Timestamp: time,
+		Title:       data.Title,
+		Content:     data.Content,
+		Author:      data.Author,
+		PublishedAt: data.PublishedAt,
 	}
 	res, err := db.NewInsert().Model(entry).Exec(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to insert entry: %w", err)
 	}
-	logger.Info("Entry inserted", slog.Any("result", res))
+	log.Println("Entry inserted", res)
 	return nil
 }

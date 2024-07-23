@@ -35,8 +35,6 @@ type Post struct {
 	Content     string    `json:"content"`
 	Author      string    `json:"author"`
 	PublishedAt time.Time `json:"published_at"`
-	Category    string    `json:"category"`
-	Tags        string    `json:"tags"`
 }
 
 type PageData struct {
