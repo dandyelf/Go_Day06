@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	var db db.PostStore
-	mserver.HttpServ(&db)
+	base := db.NewPostStore("")
+	mserver.HttpServ(base)
 }

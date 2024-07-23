@@ -17,10 +17,13 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 )
 
-var db *bun.DB
-
-type PostStore struct {
+type postStore struct {
 	// Дополнительные поля, если необходимо
+	db *bun.DB
+}
+
+func NewPostStore(connectStr string) *postStore {
+	return &postStore{}
 }
 
 type Entry struct {
@@ -32,7 +35,7 @@ type Entry struct {
 	PublishedAt   time.Time `json:"published_at"`
 }
 
-func (ps *PostStore) GetPosts(limit int, offset int) ([]types.Post, int, error) {
+func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) {
 	// from := offset*limit - limit + 1
 	list := []types.Post{{Author: "I'm", Content: "Go go gadjet", PublishedAt: time.Now()},
 		{Author: "I'm", Content: "Super hero RULEZZZZ", PublishedAt: time.Now()},
@@ -42,38 +45,38 @@ func (ps *PostStore) GetPosts(limit int, offset int) ([]types.Post, int, error) 
 	return list, 3, nil
 }
 
-func (ps *PostStore) CheckAdminUser(User string, password string) bool {
+func (ps *postStore) CheckAdminUser(User string, password string) bool {
 	return true
 }
 
-func (ps *PostStore) AddPost(post types.Post) error {
+func (ps *postStore) AddPost(post types.Post) error {
 
-	return AddEntry(post)
+	return ps.AddEntry(post)
 }
 
 // conf PgConf
-func DbConnect(dsn string) error {
+func (ps *postStore) DbConnect(dsn string) error {
 	if dsn == "" {
 		dsn = "postgres://postgres:123@localhost:5432/postgres?sslmode=disable"
 	}
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
-	db = bun.NewDB(sqldb, pgdialect.New())
-	err := db.Ping()
+	ps.db = bun.NewDB(sqldb, pgdialect.New())
+	err := ps.db.Ping()
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 	return nil
 }
 
-func AddNewTable(logger *slog.Logger, drop bool) error {
-	err := db.Ping()
+func (ps *postStore) AddNewTable(logger *slog.Logger, drop bool) error {
+	err := ps.db.Ping()
 	if err != nil {
 		return fmt.Errorf("database ping failed: %w", err)
 	}
 	logger.Info("Connected to database")
 
 	if drop {
-		err = db.ResetModel(context.Background(), (*Entry)(nil))
+		err = ps.db.ResetModel(context.Background(), (*Entry)(nil))
 		if err != nil {
 
 			return fmt.Errorf("failed to create table: %w", err)
@@ -82,7 +85,7 @@ func AddNewTable(logger *slog.Logger, drop bool) error {
 
 		return nil
 	}
-	_, err = db.NewCreateTable().
+	_, err = ps.db.NewCreateTable().
 		Model((*Entry)(nil)).
 		IfNotExists().
 		Exec(context.Background())
@@ -93,8 +96,8 @@ func AddNewTable(logger *slog.Logger, drop bool) error {
 	return nil
 }
 
-func AddEntry(data types.Post) error {
-	if db == nil {
+func (ps *postStore) AddEntry(data types.Post) error {
+	if ps.db == nil {
 		return fmt.Errorf("database connection is not initialized")
 	}
 	entry := &Entry{
@@ -103,7 +106,7 @@ func AddEntry(data types.Post) error {
 		Author:      data.Author,
 		PublishedAt: data.PublishedAt,
 	}
-	res, err := db.NewInsert().Model(entry).Exec(context.Background())
+	res, err := ps.db.NewInsert().Model(entry).Exec(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to insert entry: %w", err)
 	}
