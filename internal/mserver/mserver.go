@@ -36,17 +36,17 @@ func jToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func dbHandler(w http.ResponseWriter, r *http.Request) {
-	createPost(&types.Post{Author: "I'm", Content: "I'm GROOD or not", Title: "I'm not", PublishedAt: time.Now()})
+	err := createPost(&types.Post{Author: "I'm", Content: "I'm GROOD or not", Title: "I'm not", PublishedAt: time.Now()})
+	if err != nil {
+		log.Println(err.Error())
+	}
 	hwriter.HWriter(w, r, store)
 }
 
 func createPost(post *types.Post) error {
-	posts, _, _ := store.GetPosts(1, 1)
+	var err error
 	if post != nil {
-		store.AddPost(post)
+		err = store.AddPost(post)
 	}
-	if len(posts) > 0 {
-		store.AddPost(&posts[0])
-	}
-	return nil
+	return err
 }

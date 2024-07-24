@@ -23,10 +23,7 @@ type SearchResult struct {
 
 	   published_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-
-
-	INSERT INTO posts (title, content, author, published_at)
-
+INSERT INTO posts (title, content, author, published_at)
 VALUES
 ('Post 1', 'Content for Post 1', 'Author 1', '2022-01-01 12:00:00'),
 ('Post 2', 'Content for Post 2', 'Author 2', '2022-01-02 12:00:00'),
@@ -35,7 +32,7 @@ VALUES
 */
 type Post struct {
 	Title       string    `json:"title"`
-	Content     string    `bun:"type:text" json:"content"`
+	Content     string    `json:"content"`
 	Author      string    `json:"author"`
 	PublishedAt time.Time `json:"published_at"`
 }

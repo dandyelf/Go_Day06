@@ -24,7 +24,7 @@ type postStore struct {
 type Entry struct {
 	bun.BaseModel `bun:"table:myblog"`
 	Title         string    `json:"title"`
-	Content       string    `json:"content"`
+	Content       string    `bun:"type:text" json:"content"`
 	Author        string    `json:"author"`
 	PublishedAt   time.Time `json:"published_at"`
 }
@@ -37,7 +37,7 @@ func NewPostStore(connectStr string) *postStore {
 		return nil
 	}
 	store.AddNewTable(false)
-	return &postStore{}
+	return store
 }
 
 func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) {
