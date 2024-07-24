@@ -7,7 +7,14 @@ import (
 	"strings"
 )
 
-func HWriter(w http.ResponseWriter, r *http.Request, GetPosts func(limit int, offset int) ([]types.Post, int, error)) {
+type Store interface {
+	// returns a list of items, a total number of hits and (or) an error in case of one
+	GetPosts(limit int, offset int) ([]types.Post, int, error)
+	AddPost(post types.Post) error
+	CheckAdminUser(User string, password string) bool
+}
+
+func HWriter(w http.ResponseWriter, r *http.Request, store Store) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -72,7 +79,6 @@ func createHtml(total int, prev int, next int, perPage int, currentPage int, lis
 
 	for _, restaurant := range list {
 		html.WriteString(`<li>`)
-		html.WriteString(`	<div>` + strconv.FormatInt(restaurant.ID, 10) + `</div>`)
 		html.WriteString(`	<div>` + restaurant.Author + `</div>`)
 		html.WriteString(`	<div>` + restaurant.Content + `</div>`)
 		html.WriteString(`	<div>` + restaurant.PublishedAt.GoString() + `</div>`)
@@ -99,4 +105,12 @@ func createHtml(total int, prev int, next int, perPage int, currentPage int, lis
 `)
 
 	return html.String()
+}
+
+func createPost(post types.Post, store Store) error {
+	posts, _, _ := store.GetPosts(1, 1)
+	if len(posts) > 0 {
+		store.AddPost(posts[0])
+	}
+	return nil
 }

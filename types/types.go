@@ -17,22 +17,25 @@ type SearchResult struct {
 
 /*
 	CREATE TABLE posts (
-	   id SERIAL PRIMARY KEY,
 	   title VARCHAR(255) NOT NULL,
 	   content TEXT NOT NULL,
 	   author VARCHAR(255) NOT NULL,
 
-published_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	   published_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-	category VARCHAR(255),
-	tags TEXT[]
 
+
+	INSERT INTO posts (title, content, author, published_at)
+
+VALUES
+('Post 1', 'Content for Post 1', 'Author 1', '2022-01-01 12:00:00'),
+('Post 2', 'Content for Post 2', 'Author 2', '2022-01-02 12:00:00'),
+('Post 3', 'Content for Post 3', 'Author 3', '2022-01-03 12:00:00');
 );
 */
 type Post struct {
-	ID          int64     `json:"id"`
 	Title       string    `json:"title"`
-	Content     string    `json:"content"`
+	Content     string    `bun:"type:text" json:"content"`
 	Author      string    `json:"author"`
 	PublishedAt time.Time `json:"published_at"`
 }

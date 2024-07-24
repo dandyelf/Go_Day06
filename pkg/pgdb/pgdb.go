@@ -9,7 +9,6 @@ import (
 	// "encoding/json"
 	"fmt"
 	"leftrana/superhero/types"
-	"log/slog"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -23,11 +22,18 @@ type postStore struct {
 }
 
 func NewPostStore(connectStr string) *postStore {
+	store := new(postStore)
+	err := store.DbConnect(connectStr)
+	if err != nil {
+		log.Printf("failed to connect to database: %e", err)
+		return nil
+	}
+	store.AddNewTable(false)
 	return &postStore{}
 }
 
 type Entry struct {
-	bun.BaseModel `bun:"table:anomalies"`
+	bun.BaseModel `bun:"table:myblog"`
 	Title         string    `json:"title"`
 	Content       string    `json:"content"`
 	Author        string    `json:"author"`
@@ -67,12 +73,12 @@ func (ps *postStore) DbConnect(dsn string) error {
 	return nil
 }
 
-func (ps *postStore) AddNewTable(logger *slog.Logger, drop bool) error {
+func (ps *postStore) AddNewTable(drop bool) error {
 	err := ps.db.Ping()
 	if err != nil {
 		return fmt.Errorf("database ping failed: %w", err)
 	}
-	logger.Info("Connected to database")
+	log.Println("Connected to database")
 
 	if drop {
 		err = ps.db.ResetModel(context.Background(), (*Entry)(nil))
@@ -80,7 +86,7 @@ func (ps *postStore) AddNewTable(logger *slog.Logger, drop bool) error {
 
 			return fmt.Errorf("failed to create table: %w", err)
 		}
-		logger.Info("Table droped")
+		log.Println("Table droped")
 
 		return nil
 	}
