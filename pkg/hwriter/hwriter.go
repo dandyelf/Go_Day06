@@ -10,8 +10,6 @@ import (
 type Store interface {
 	// returns a list of items, a total number of hits and (or) an error in case of one
 	GetPosts(limit int, offset int) ([]types.Post, int, error)
-	AddPost(post types.Post) error
-	CheckAdminUser(User string, password string) bool
 }
 
 func HWriter(w http.ResponseWriter, r *http.Request, store Store) {
@@ -40,7 +38,7 @@ func HWriter(w http.ResponseWriter, r *http.Request, store Store) {
 		}
 	}
 
-	list, total, err := GetPosts(perPage, page)
+	list, total, err := store.GetPosts(perPage, page)
 
 	if err != nil {
 		w.Write([]byte("400 Invalid page value: " + strconv.Itoa(page)))
@@ -105,12 +103,4 @@ func createHtml(total int, prev int, next int, perPage int, currentPage int, lis
 `)
 
 	return html.String()
-}
-
-func createPost(post types.Post, store Store) error {
-	posts, _, _ := store.GetPosts(1, 1)
-	if len(posts) > 0 {
-		store.AddPost(posts[0])
-	}
-	return nil
 }

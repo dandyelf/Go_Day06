@@ -21,6 +21,14 @@ type postStore struct {
 	db *bun.DB
 }
 
+type Entry struct {
+	bun.BaseModel `bun:"table:myblog"`
+	Title         string    `json:"title"`
+	Content       string    `json:"content"`
+	Author        string    `json:"author"`
+	PublishedAt   time.Time `json:"published_at"`
+}
+
 func NewPostStore(connectStr string) *postStore {
 	store := new(postStore)
 	err := store.DbConnect(connectStr)
@@ -30,14 +38,6 @@ func NewPostStore(connectStr string) *postStore {
 	}
 	store.AddNewTable(false)
 	return &postStore{}
-}
-
-type Entry struct {
-	bun.BaseModel `bun:"table:myblog"`
-	Title         string    `json:"title"`
-	Content       string    `json:"content"`
-	Author        string    `json:"author"`
-	PublishedAt   time.Time `json:"published_at"`
 }
 
 func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) {
@@ -54,7 +54,7 @@ func (ps *postStore) CheckAdminUser(User string, password string) bool {
 	return true
 }
 
-func (ps *postStore) AddPost(post types.Post) error {
+func (ps *postStore) AddPost(post *types.Post) error {
 
 	return ps.AddEntry(post)
 }
@@ -101,7 +101,7 @@ func (ps *postStore) AddNewTable(drop bool) error {
 	return nil
 }
 
-func (ps *postStore) AddEntry(data types.Post) error {
+func (ps *postStore) AddEntry(data *types.Post) error {
 	if ps.db == nil {
 		return fmt.Errorf("database connection is not initialized")
 	}
