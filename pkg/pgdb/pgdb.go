@@ -40,6 +40,29 @@ func NewPostStore(connectStr string) *postStore {
 	return store
 }
 
+type Entry struct {
+	ID   int64
+	Text string
+}
+
+type Cursor struct {
+	Start int64 // pointer to the first item for the previous page
+	End   int64 // pointer to the last item for the next page
+}
+
+func selectNextPage(ctx context.Context, db *bun.DB, cursor int64) ([]Entry, Cursor, error) {
+	var entries []Entry
+	if err := db.NewSelect().
+		Model(&entries).
+		Where("id > ?", cursor).
+		OrderExpr("id ASC").
+		Limit(10).
+		Scan(ctx); err != nil {
+		return nil, Cursor{}, err
+	}
+	return entries, NewCursor(entries), nil
+}
+
 func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) {
 	// from := offset*limit - limit + 1
 	list := []types.Post{{Author: "I'm", Content: "Go go gadjet", PublishedAt: time.Now()},
