@@ -28,7 +28,6 @@ func NewPostStore(connectStr string) *postStore {
 
 type Entry struct {
 	bun.BaseModel `bun:"table:anomalies"`
-	ID            int64     `bun:"id,pk,autoincrement"`
 	Title         string    `json:"title"`
 	Content       string    `json:"content"`
 	Author        string    `json:"author"`
