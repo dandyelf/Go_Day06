@@ -10,8 +10,8 @@ import (
 func GetConfig(src string) (*types.Config, error) {
 	config := new(types.Config)
 
-	viper.SetConfigFile("config.yaml") // Устанавливаем файл конфигурации
-	viper.ReadInConfig()               // Читаем файл конфигурации
+	viper.SetConfigFile(src) // Устанавливаем файл конфигурации
+	viper.ReadInConfig()     // Читаем файл конфигурации
 
 	err := viper.Unmarshal(&config) // Распарсим конфигурацию в структуру
 	if err != nil {

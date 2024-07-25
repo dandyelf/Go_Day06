@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	config, err := config.GetConfig("config.yaml")
+	config, err := config.GetConfig("admin_credentials.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
