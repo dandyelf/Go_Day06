@@ -57,22 +57,24 @@ func NewPostStore(connectStr string) *postStore {
 	return store
 }
 
-func (ps *postStore) SelectPage(ctx context.Context, db *bun.DB, limit, offset int) ([]Entry, error) {
+func (ps *postStore) SelectPage(ctx context.Context, db *bun.DB, limit, offset int) ([]Entry, int, error) {
 	var entries []Entry
-
-	if err := ps.db.NewSelect().Model(&entries).Offset(offset).Limit(limit).Scan(ctx); err != nil {
-		return nil, err
+	count, err := db.NewSelect().Model(&entries).Count(ctx)
+	if err != nil {
+		return nil, count, err
 	}
-	return entries, nil
+	if err = ps.db.NewSelect().Model(&entries).Offset(offset).Limit(limit).Scan(ctx); err != nil {
+		return nil, count, err
+	}
+	return entries, count, nil
 }
 
 func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) {
 	// from := offset*limit - limit + 1
-	// rows, err := ps.db.NewSelect().Model(Entry{}).
-	list, err := ps.SelectPage(context.Background(), ps.db, limit, offset)
+	list, count, err := ps.SelectPage(context.Background(), ps.db, limit, offset)
 	if err != nil {
 		log.Println(err)
-		return nil, 1000, fmt.Errorf("fail get posts: %w", err)
+		return nil, count, fmt.Errorf("fail get posts: %w", err)
 	}
 	posts := make([]types.Post, len(list))
 	for i, v := range list {
@@ -82,7 +84,7 @@ func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) 
 			PublishedAt: v.PublishedAt,
 		}
 	}
-	return posts, 1000, nil
+	return posts, count, nil
 }
 
 func (ps *postStore) CheckAdminUser(User string, password string) bool {
