@@ -37,40 +37,52 @@ func NewPostStore(connectStr string) *postStore {
 		return nil
 	}
 	store.AddNewTable(false)
+	list := []types.Post{{Author: "I'm", Content: "Go go gadjet", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "Super hero RULEZZZZ", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "I'm so sad, all stupid things, tsh...", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "I'm the fastest man alive", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "With great power comes great responsibility", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "I'm not vengeance, I'm not the night, I'm Batman", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "I'm from another world", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "I'm the protector of the galaxy", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "I'm the master of the mystic arts", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "I'm the god of thunder", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "I'm the god of mischief", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "I'm the god of the sky", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "I'm the god of the sea", PublishedAt: time.Now()},
+	}
+	for _, v := range list {
+		store.AddPost(&v)
+	}
 	return store
 }
 
-type Entry struct {
-	ID   int64
-	Text string
-}
-
-type Cursor struct {
-	Start int64 // pointer to the first item for the previous page
-	End   int64 // pointer to the last item for the next page
-}
-
-func selectNextPage(ctx context.Context, db *bun.DB, cursor int64) ([]Entry, Cursor, error) {
+func (ps *postStore) SelectPage(ctx context.Context, db *bun.DB, limit, offset int) ([]Entry, error) {
 	var entries []Entry
-	if err := db.NewSelect().
-		Model(&entries).
-		Where("id > ?", cursor).
-		OrderExpr("id ASC").
-		Limit(10).
-		Scan(ctx); err != nil {
-		return nil, Cursor{}, err
+
+	if err := ps.db.NewSelect().Model(&entries).Offset(offset).Limit(limit).Scan(ctx); err != nil {
+		return nil, err
 	}
-	return entries, NewCursor(entries), nil
+	return entries, nil
 }
 
 func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) {
 	// from := offset*limit - limit + 1
-	list := []types.Post{{Author: "I'm", Content: "Go go gadjet", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "Super hero RULEZZZZ", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm so sad, all stupid things, tsh...", PublishedAt: time.Now()},
+	// rows, err := ps.db.NewSelect().Model(Entry{}).
+	list, err := ps.SelectPage(context.Background(), ps.db, limit, offset)
+	if err != nil {
+		log.Println(err)
+		return nil, 1000, fmt.Errorf("fail get posts: %w", err)
 	}
-
-	return list, 3, nil
+	posts := make([]types.Post, len(list))
+	for i, v := range list {
+		posts[i] = types.Post{
+			Author:      v.Author,
+			Content:     v.Content,
+			PublishedAt: v.PublishedAt,
+		}
+	}
+	return posts, 1000, nil
 }
 
 func (ps *postStore) CheckAdminUser(User string, password string) bool {

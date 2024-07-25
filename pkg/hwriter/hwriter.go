@@ -28,7 +28,7 @@ func HWriter(w http.ResponseWriter, r *http.Request, store Store) {
 		}
 	}
 
-	perPage := 10
+	perPage := 3
 	if queryPerPage := r.URL.Query().Get("per-page"); len(queryPerPage) != 0 {
 		if perPageNum, err := strconv.Atoi(queryPerPage); err == nil {
 			perPage = perPageNum

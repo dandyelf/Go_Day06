@@ -22,8 +22,8 @@ func HttpServ(st Store) {
 	store = st
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", htmlHandler)
-	mux.HandleFunc("/api/admin/", jToken)
-	mux.HandleFunc("/api/addpost/", jkey.CheckAuth(dbHandler))
+	mux.HandleFunc("/admin/", jToken)
+	mux.HandleFunc("/addpost/", jkey.CheckAuth(dbHandler))
 	log.Fatal(http.ListenAndServe(":8888", mux))
 }
 
