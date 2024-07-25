@@ -1,2 +1,2 @@
 server:
-  dns: postgres://postgres:1233@localhost:5432/postgres?sslmode=disable
+  dsn: postgres://postgres:123@localhost:5432/postgres?sslmode=disable
