@@ -70,7 +70,6 @@ func (ps *postStore) SelectPage(ctx context.Context, db *bun.DB, limit, offset i
 }
 
 func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) {
-	// from := offset*limit - limit + 1
 	list, count, err := ps.SelectPage(context.Background(), ps.db, limit, offset)
 	if err != nil {
 		log.Println(err)
@@ -99,6 +98,7 @@ func (ps *postStore) AddPost(post *types.Post) error {
 // conf PgConf
 func (ps *postStore) DbConnect(dsn string) error {
 	if dsn == "" {
+		log.Println("default dns")
 		dsn = "postgres://postgres:123@localhost:5432/postgres?sslmode=disable"
 	}
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))

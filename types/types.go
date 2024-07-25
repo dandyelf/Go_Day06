@@ -2,6 +2,12 @@ package types
 
 import "time"
 
+type Config struct {
+	Server struct {
+		Dsn string `mapstructure:"dsn"`
+	} `mapstructure:"server"`
+}
+
 type SearchResult struct {
 	Hits struct {
 		Total struct {
