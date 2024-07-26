@@ -4,8 +4,8 @@ import "time"
 
 type Config struct {
 	Server struct {
-		Dsn string `mapstructure:"dsn"`
-	} `mapstructure:"server"`
+		Dsn string
+	}
 }
 
 type SearchResult struct {
