@@ -1,12 +1,13 @@
 package mserver
 
 import (
+	"io"
 	"leftrana/superhero/pkg/hwriter"
 	"leftrana/superhero/pkg/jkey"
 	"leftrana/superhero/types"
 	"log"
 	"net/http"
-	"time"
+	"net/url"
 )
 
 type Store interface {
@@ -21,9 +22,9 @@ var store Store
 func HttpServ(st Store) {
 	store = st
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", htmlHandler)
+	mux.HandleFunc("/", htmlHandler) // https://github.com/rus-sharafiev/go-rest-common/blob/main/spa/handler.go
 	mux.HandleFunc("/admin/", jToken)
-	mux.HandleFunc("/addpost/", jkey.CheckAuth(dbHandler))
+	mux.HandleFunc("/addpost", dbHandler)
 	log.Fatal(http.ListenAndServe(":8888", mux))
 }
 
@@ -36,17 +37,28 @@ func jToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func dbHandler(w http.ResponseWriter, r *http.Request) {
-	err := createPost(&types.Post{Author: "I'm", Content: "I'm GROOD or not", Title: "I'm not", PublishedAt: time.Now()})
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Println(err.Error())
+		log.Printf("Error reading body: %v", err)
+		http.Error(w, "can't read body", http.StatusBadRequest)
+		return
 	}
-	hwriter.HWriter(w, r, store)
+	defer r.Body.Close()
+	query, err := url.ParseQuery(string(body))
+	if err != nil {
+		log.Println("err parse queyr", err)
+	}
+
+	user := query.Get("user")
+	passoword := query.Get("password")
+	log.Printf("user: %v, password: %v", user, passoword)
+
 }
 
-func createPost(post *types.Post) error {
-	var err error
-	if post != nil {
-		err = store.AddPost(post)
-	}
-	return err
-}
+// func createPost(post *types.Post) error {
+// 	var err error
+// 	if post != nil {
+// 		err = store.AddPost(post)
+// 	}
+// 	return err
+// }

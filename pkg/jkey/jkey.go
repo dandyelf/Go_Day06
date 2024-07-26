@@ -21,6 +21,7 @@ type Claims struct {
 
 func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		c, err := r.Cookie("token")
 		var tknStr string
 		if err != nil {
