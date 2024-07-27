@@ -13,33 +13,41 @@ type Store interface {
 	// returns a list of items, a total number of hits and (or) an error in case of one
 	GetPosts(limit int, offset int) ([]types.Post, int, error)
 	AddPost(post *types.Post) error
-	CheckAdminUser(User string, password string) bool
 }
 
-var store Store
+type mserver struct {
+	adminUser types.Admin
+	store     Store
+}
 
 // https://github.com/rus-sharafiev/go-rest-common/blob/main/spa/handler.go
 
-func HttpServ(st Store) {
-	store = st
+func (s *mserver) ServStart() {
 	mux := http.NewServeMux()
 	fs := http.FileServer(http.Dir("static/"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
-	mux.HandleFunc("/admin", adminHandler)
-	mux.HandleFunc("/addpost", dbHandler)
-	mux.HandleFunc("/", htmlHandler)
+	mux.HandleFunc("/admin/", s.adminHandler)
+	mux.HandleFunc("/addpost/", s.addPostHandler)
+	mux.HandleFunc("/", s.htmlHandler)
 	log.Fatal(http.ListenAndServe(":8888", mux))
 }
 
-func htmlHandler(w http.ResponseWriter, r *http.Request) {
-	hwriter.PostsPageWriter(w, r, store)
+func NewHttpServ(st Store, admin types.Admin) *mserver {
+	s := new(mserver)
+	s.store = st
+	s.adminUser = admin
+	return s
 }
 
-func adminHandler(w http.ResponseWriter, r *http.Request) {
-
+func (s *mserver) htmlHandler(w http.ResponseWriter, r *http.Request) {
+	hwriter.PostsPageWriter(w, r, s.store)
 }
 
-func dbHandler(w http.ResponseWriter, r *http.Request) {
+func (s *mserver) adminHandler(w http.ResponseWriter, r *http.Request) {
+	hwriter.AdminPage(w, r)
+}
+
+func (s *mserver) addPostHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("Error reading body: %v", err)
@@ -54,7 +62,15 @@ func dbHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := query.Get("user")
 	passoword := query.Get("password")
-	log.Printf("user: %v, password: %v", user, passoword)
+	log.Printf("user want: %v, password want: %v", s.adminUser.Login, s.adminUser.Password)
+	log.Printf("user have: %v, password have: %v", user, passoword)
+
+	if user != s.adminUser.Login || passoword != s.adminUser.Password {
+		w.Write([]byte("unauthorized"))
+		return
+	}
+	hwriter.AddPostPage(w, r)
+
 }
 
 // func createPost(post *types.Post) error {

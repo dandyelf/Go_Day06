@@ -97,16 +97,88 @@ func createHtml(total int, prev int, next int, perPage int, currentPage int, lis
 	}
 	html.WriteString(`</div>`)
 
+	return html.String()
+}
+
+func AdminPage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	html := createAdmin()
+	w.Write([]byte(html))
+}
+
+func createAdmin() string {
+	var html strings.Builder
+
 	html.WriteString(`
-		</ul>
-		<form method="post" action="/addpost">
-			<md-outlined-text-field label="Логин" name="user" required></md-outlined-text-field>
-			<md-outlined-text-field label="Пароль" name="password" type="password" required></md-outlined-text-field>
-			<md-filled-button type="submit">Войти</md-filled-button>
-		<form>
-	</body>
+<!doctype html>
+<html>
+	<head>
+		<script type="text/javascript" src="http://localhost:8888/static/web-components-bundle.min.js" async="async"></script>
+		<meta charset="utf-8">
+		<title>My blog</title>
+		<meta name="description" content="">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+	</head>
+
+	<body>
+		<style>
+			html {
+				font-family: "Roboto", sans-serif;
+			}
+		</style>
+`)
+	html.WriteString(`
+</ul>
+<form method="post" action="/addpost">
+	<md-outlined-text-field label="Логин" name="user" required></md-outlined-text-field>
+	<md-outlined-text-field label="Пароль" name="password" type="password" required></md-outlined-text-field>
+	<md-filled-button type="submit">Войти</md-filled-button>
+<form>
+</body>
 </html>	
 `)
+	return html.String()
+}
 
+func AddPostPage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	html := createAddPost()
+	w.Write([]byte(html))
+}
+
+func createAddPost() string {
+	var html strings.Builder
+
+	html.WriteString(`
+<!doctype html>
+<html>
+	<head>
+		<script type="text/javascript" src="http://localhost:8888/static/web-components-bundle.min.js" async="async"></script>
+		<meta charset="utf-8">
+		<title>My blog</title>
+		<meta name="description" content="">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+	</head>
+
+	<body>
+		<style>
+			html {
+				font-family: "Roboto", sans-serif;
+			}
+		</style>
+`)
+	html.WriteString("Post added, my Hero!")
 	return html.String()
 }

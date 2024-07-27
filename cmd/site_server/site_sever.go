@@ -13,5 +13,6 @@ func main() {
 		log.Fatal(err)
 	}
 	base := db.NewPostStore(config.Server.Dsn)
-	mserver.HttpServ(base)
+	s := mserver.NewHttpServ(base, config.Admin)
+	s.ServStart()
 }

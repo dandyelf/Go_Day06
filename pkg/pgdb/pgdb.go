@@ -86,10 +86,6 @@ func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) 
 	return posts, count, nil
 }
 
-func (ps *postStore) CheckAdminUser(User string, password string) bool {
-	return true
-}
-
 func (ps *postStore) AddPost(post *types.Post) error {
 
 	return ps.AddEntry(post)

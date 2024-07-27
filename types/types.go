@@ -6,10 +6,12 @@ type Config struct {
 	Server struct {
 		Dsn string `json:"dsn"`
 	} `json:"server"`
-	Admin struct {
-		Login    string `json:"login"`
-		Password string `json:"password"`
-	} `json:"admin"`
+	Admin Admin `json:"admin"`
+}
+
+type Admin struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
 }
 
 /*
