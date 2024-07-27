@@ -132,25 +132,19 @@ func createAdmin() string {
 				font-family: "Roboto", sans-serif;
 			}
 		</style>
-`)
-	html.WriteString(`
-</ul>
-<form method="post" action="/addpost">
-	<md-outlined-text-field label="Логин" name="user" required></md-outlined-text-field>
-	<md-outlined-text-field label="Пароль" name="password" type="password" required></md-outlined-text-field>
-	<md-filled-button type="submit">Войти</md-filled-button>
-<form>
-</body>
+
+		<form method="post" action="/addpost">
+			<md-outlined-text-field label="Логин" name="user" required></md-outlined-text-field>
+			<md-outlined-text-field label="Пароль" name="password" type="password" required></md-outlined-text-field>
+			<md-filled-button type="submit">Войти</md-filled-button>
+		<form>
+	</body>
 </html>	
 `)
 	return html.String()
 }
 
 func AddPostPage(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
 	html := createAddPost()
 	w.Write([]byte(html))
 }
@@ -178,7 +172,17 @@ func createAddPost() string {
 				font-family: "Roboto", sans-serif;
 			}
 		</style>
+
+		<div>Здарова, саипал!</div>
+		<div>Твой пароль я не ипу </div>
+		<form method="post" action="/addpost">
+			<md-outlined-text-field label="Название" name="title" required></md-outlined-text-field>
+			<md-outlined-text-field label="Пост" name="post" type="textarea"></md-outlined-text-field>
+			<md-filled-button type="submit">Войти</md-filled-button>
+		</form>
+	</body>
+</html>	
 `)
-	html.WriteString("Post added, my Hero!")
+	// html.WriteString("Post added, my Hero!")
 	return html.String()
 }
