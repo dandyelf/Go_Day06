@@ -64,19 +64,20 @@ func (s *mserver) addPostHandler(w http.ResponseWriter, r *http.Request) {
 	passoword := query.Get("password")
 	log.Printf("user want: %v, password want: %v", s.adminUser.Login, s.adminUser.Password)
 	log.Printf("user have: %v, password have: %v", user, passoword)
-
-	if user != s.adminUser.Login || passoword != s.adminUser.Password {
-		w.Write([]byte("unauthorized"))
-		return
-	}
+	//   TODO
+	// if user != s.adminUser.Login || passoword != s.adminUser.Password {
+	// 	w.Write([]byte("unauthorized"))
+	// 	return
+	// }
 	hwriter.AddPostPage(w, r)
-
+	p := types.Post{Author: "I'm", Title: "Brutal I'm", Content: "I'm the best of the best, of the best, of the best."}
+	s.createPost(&p)
 }
 
-// func createPost(post *types.Post) error {
-// 	var err error
-// 	if post != nil {
-// 		err = store.AddPost(post)
-// 	}
-// 	return err
-// }
+func (s *mserver) createPost(post *types.Post) error {
+	var err error
+	if post != nil {
+		err = s.store.AddPost(post)
+	}
+	return err
+}
