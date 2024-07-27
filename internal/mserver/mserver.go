@@ -3,7 +3,6 @@ package mserver
 import (
 	"io"
 	"leftrana/superhero/pkg/hwriter"
-	"leftrana/superhero/pkg/jkey"
 	"leftrana/superhero/types"
 	"log"
 	"net/http"
@@ -19,21 +18,25 @@ type Store interface {
 
 var store Store
 
+// https://github.com/rus-sharafiev/go-rest-common/blob/main/spa/handler.go
+
 func HttpServ(st Store) {
 	store = st
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", htmlHandler) // https://github.com/rus-sharafiev/go-rest-common/blob/main/spa/handler.go
-	mux.HandleFunc("/admin/", jToken)
+	fs := http.FileServer(http.Dir("static/"))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
+	mux.HandleFunc("/admin", adminHandler)
 	mux.HandleFunc("/addpost", dbHandler)
+	mux.HandleFunc("/", htmlHandler)
 	log.Fatal(http.ListenAndServe(":8888", mux))
 }
 
 func htmlHandler(w http.ResponseWriter, r *http.Request) {
-	hwriter.HWriter(w, r, store)
+	hwriter.PostsPageWriter(w, r, store)
 }
 
-func jToken(w http.ResponseWriter, r *http.Request) {
-	jkey.JwtCreate(w, r)
+func adminHandler(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func dbHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +55,6 @@ func dbHandler(w http.ResponseWriter, r *http.Request) {
 	user := query.Get("user")
 	passoword := query.Get("password")
 	log.Printf("user: %v, password: %v", user, passoword)
-
 }
 
 // func createPost(post *types.Post) error {

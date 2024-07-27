@@ -6,19 +6,10 @@ type Config struct {
 	Server struct {
 		Dsn string `json:"dsn"`
 	} `json:"server"`
-}
-
-type SearchResult struct {
-	Hits struct {
-		Total struct {
-			Value    int    `json:"value"`
-			Relation string `json:"relation"`
-		} `json:"total"`
-		Hits []struct {
-			ID     string `json:"_id"`
-			Source Post   `json:"_source"`
-		} `json:"hits"`
-	} `json:"hits"`
+	Admin struct {
+		Login    string `json:"login"`
+		Password string `json:"password"`
+	} `json:"admin"`
 }
 
 /*
@@ -36,6 +27,7 @@ VALUES
 ('Post 3', 'Content for Post 3', 'Author 3', '2022-01-03 12:00:00');
 );
 */
+
 type Post struct {
 	Title       string    `json:"title"`
 	Content     string    `json:"content"`
