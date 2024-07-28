@@ -3,6 +3,7 @@ package mserver
 import (
 	"io"
 	"leftrana/superhero/pkg/hwriter"
+	"leftrana/superhero/pkg/jwtkey"
 	"leftrana/superhero/types"
 	"log"
 	"net/http"
@@ -28,6 +29,7 @@ func (s *mserver) ServStart() {
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 	mux.HandleFunc("/admin", s.adminHandler)
 	mux.HandleFunc("/addpost", s.addPostHandler)
+	mux.HandleFunc("/pushpost", jwtkey.CheckAuth(s.pushPostHandler))
 	mux.HandleFunc("/", s.htmlHandler)
 	log.Fatal(http.ListenAndServe(":8888", mux))
 }
@@ -37,6 +39,11 @@ func NewHttpServ(st Store, admin types.Admin) *mserver {
 	s.store = st
 	s.adminUser = admin
 	return s
+}
+
+func (s *mserver) pushPostHandler(w http.ResponseWriter, r *http.Request) {
+	p := types.Post{Author: "I'm", Title: "Brutal I'm", Content: "I'm the best of the best, of the best, of the best."}
+	s.createPost(&p)
 }
 
 func (s *mserver) htmlHandler(w http.ResponseWriter, r *http.Request) {
@@ -69,9 +76,8 @@ func (s *mserver) addPostHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("unauthorized"))
 		return
 	}
+	jwtkey.JwtCreate(w, r)
 	hwriter.AddPostPage(w, r)
-	p := types.Post{Author: "I'm", Title: "Brutal I'm", Content: "I'm the best of the best, of the best, of the best."}
-	s.createPost(&p)
 }
 
 func (s *mserver) createPost(post *types.Post) error {
