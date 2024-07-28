@@ -173,8 +173,8 @@ func createAddPost() string {
 			}
 		</style>
 
-		<div>Здарова, саипал!</div>
-		<div>Твой пароль я не ипу </div>
+		<div>Пиши</div>
+		<div>пост!</div>
 		<form method="post" action="/pushpost">
 			<md-outlined-text-field label="Название" name="title" required></md-outlined-text-field>
 			<md-outlined-text-field label="Пост" name="post" type="textarea"></md-outlined-text-field>
@@ -216,12 +216,10 @@ func createPushPost() string {
 			}
 		</style>
 
-		<div>Здарова, саипал!</div>
-		<div>Твой пароль я не ипу </div>
-		<form method="post" action="/pushpost">
-			<md-outlined-text-field label="Название" name="title" required></md-outlined-text-field>
-			<md-outlined-text-field label="Пост" name="post" type="textarea"></md-outlined-text-field>
-			<md-filled-button type="submit">Опубликовать</md-filled-button>
+		<div>Пост</div>
+		<div>добавлен!</div>
+		<form method="get" action="/addpost">
+			<md-filled-button type="submit">Назад</md-filled-button>
 		</form>
 	</body>
 </html>	

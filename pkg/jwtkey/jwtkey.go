@@ -61,8 +61,8 @@ func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		handler(w, r)
-
 	}
+
 }
 
 func JwtCreate(w http.ResponseWriter, r *http.Request) {
