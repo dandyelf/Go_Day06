@@ -179,7 +179,7 @@ func createAddPost() string {
 		<div>пост!</div>
 		<form method="post" action="/pushpost">
 			<md-outlined-text-field label="Название" name="title" required></md-outlined-text-field>
-			<md-outlined-text-field label="Пост" name="post" type="textarea"></md-outlined-text-field>
+			<md-outlined-text-field label="Пост" name="content" type="textarea"></md-outlined-text-field>
 			<md-filled-button type="submit">Опубликовать</md-filled-button>
 		</form>
 	</body>

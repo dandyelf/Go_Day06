@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type Store interface {
@@ -42,9 +43,29 @@ func NewHttpServ(st Store, admin types.Admin) *mserver {
 }
 
 func (s *mserver) pushPostHandler(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("Error reading body: %v", err)
+		http.Error(w, "can't read body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+	query, err := url.ParseQuery(string(body))
+	if err != nil {
+		log.Println("err parse queyr", err)
+	}
+
+	title := query.Get("title")
+	content := query.Get("content")
+
+	var post types.Post
+	post.Author = "I'm"
+	post.PublishedAt = time.Now()
+	post.Title = title
+	post.Content = content
 	hwriter.PushPostPage(w, r)
-	p := types.Post{Author: "I'm", Title: "Brutal I'm", Content: "I'm the best of the best, of the best, of the best."}
-	s.createPost(&p)
+	// p := types.Post{Author: "I'm", Title: "Brutal I'm", Content: "I'm the best of the best, of the best, of the best."}
+	s.createPost(&post)
 }
 
 func (s *mserver) htmlHandler(w http.ResponseWriter, r *http.Request) {
