@@ -78,9 +78,8 @@ func (s *mserver) addPostHandler(w http.ResponseWriter, r *http.Request) {
 		hwriter.AddPostPage(w, r)
 		return
 	}
-	jwtkey.CheckAuth(func(w http.ResponseWriter, r *http.Request) {
-		hwriter.AddPostPage(w, r)
-	})
+	jwtkey.CheckAuth(hwriter.AddPostPage)
+	hwriter.AddPostPage(w, r)
 }
 
 func (s *mserver) createPost(post *types.Post) error {

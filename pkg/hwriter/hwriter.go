@@ -2,6 +2,7 @@ package hwriter
 
 import (
 	"leftrana/superhero/types"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -145,6 +146,7 @@ func createAdmin() string {
 }
 
 func AddPostPage(w http.ResponseWriter, r *http.Request) {
+	log.Println("post page printed")
 	html := createAddPost()
 	w.Write([]byte(html))
 }
