@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/russross/blackfriday"
 )
 
 type Store interface {
@@ -57,14 +59,13 @@ func (s *mserver) pushPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	title := query.Get("title")
 	content := query.Get("content")
-
+	c := markdownToHtml(content)
 	var post types.Post
 	post.Author = "I'm"
 	post.PublishedAt = time.Now()
 	post.Title = title
-	post.Content = content
+	post.Content = c
 	hwriter.PushPostPage(w, r)
-	// p := types.Post{Author: "I'm", Title: "Brutal I'm", Content: "I'm the best of the best, of the best, of the best."}
 	s.createPost(&post)
 }
 
@@ -109,4 +110,9 @@ func (s *mserver) createPost(post *types.Post) error {
 		err = s.store.AddPost(post)
 	}
 	return err
+}
+
+func markdownToHtml(markdownText string) string {
+	html := blackfriday.MarkdownCommon([]byte(markdownText))
+	return string(html)
 }

@@ -74,14 +74,15 @@ func createHtml(total int, prev int, next int, perPage int, currentPage int, lis
 			}
 		</style>
 `)
-
+	html.WriteString(`<img src="/static/amazing_logo.png" alt="wonderful logo">
+`)
 	html.WriteString(`<h4>Total: ` + strconv.Itoa(total) + `</h4><ul>`)
 
-	for _, restaurant := range list {
+	for _, postList := range list {
 		html.WriteString(`<li>`)
-		html.WriteString(`	<div>` + restaurant.Author + `</div>`)
-		html.WriteString(`	<div>` + restaurant.Content + `</div>`)
-		html.WriteString(`	<div>` + restaurant.PublishedAt.GoString() + `</div>`)
+		html.WriteString(`	<div>` + postList.Author + `</div>`)
+		html.WriteString(`	<div>` + postList.Content + `</div>`)
+		html.WriteString(`	<div>` + postList.PublishedAt.GoString() + `</div>`)
 		html.WriteString(`</li>`)
 	}
 
