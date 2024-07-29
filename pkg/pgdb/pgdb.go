@@ -36,20 +36,23 @@ func NewPostStore(connectStr string) *postStore {
 		log.Printf("failed to connect to database: %e", err)
 		return nil
 	}
-	store.AddNewTable(false)
-	list := []types.Post{{Author: "I'm", Content: "Go go gadjet", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "Super hero RULEZZZZ", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm so sad, all stupid things, tsh...", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm the fastest man alive", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "With great power comes great responsibility", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm not vengeance, I'm not the night, I'm Batman", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm from another world", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm the protector of the galaxy", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm the master of the mystic arts", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm the god of thunder", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm the god of mischief", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm the god of the sky", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm the god of the sea", PublishedAt: time.Now()},
+	store.AddNewTable(true)
+	list := []types.Post{{Author: "I'm", Content: "1Go go gadjet", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "2Super hero RULEZZZZ", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "3I'm so sad, all stupid things, tsh...", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "4I'm the fastest man alive", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "5With great power comes great responsibility", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "6I'm not vengeance, I'm not the night, I'm Batman", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "7I'm from another world", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "8I'm the protector of the galaxy", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "9I'm the master of the mystic arts", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "10I'm the god of thunder", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "11I'm the god of mischief", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "12I'm the god of the sky", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "13I'm the god of the sea", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "14I'm the god of the fire", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "15I'm the god of the water", PublishedAt: time.Now()},
+		{Author: "I'm", Content: "16I'm the god of the trees", PublishedAt: time.Now()},
 	}
 	for _, v := range list {
 		store.AddPost(&v)

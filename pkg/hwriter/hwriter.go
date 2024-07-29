@@ -39,7 +39,7 @@ func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 		}
 	}
 
-	list, total, err := store.GetPosts(perPage, page)
+	list, total, err := store.GetPosts(perPage, (page-1)*perPage)
 
 	if err != nil {
 		w.Write([]byte("400 Invalid page value: " + strconv.Itoa(page)))
@@ -85,8 +85,10 @@ func createHtml(total int, prev int, next int, perPage int, currentPage int, lis
 		html.WriteString(`	<div>` + postList.PublishedAt.GoString() + `</div>`)
 		html.WriteString(`</li>`)
 	}
-
-	lastPage := total / perPage
+	lastPage := total/perPage + 1
+	if total%perPage == 0 {
+		lastPage = lastPage - 1
+	}
 
 	html.WriteString(`<div style="display: flex; gap: 12px; margin: 12px 0">`)
 	if prev > 0 {
@@ -186,7 +188,6 @@ func createAddPost() string {
 	</body>
 </html>	
 `)
-	// html.WriteString("Post added, my Hero!")
 	return html.String()
 }
 
@@ -227,6 +228,5 @@ func createPushPost() string {
 	</body>
 </html>	
 `)
-	// html.WriteString("Post added, my Hero!")
 	return html.String()
 }
