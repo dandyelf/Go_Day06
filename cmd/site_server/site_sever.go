@@ -14,7 +14,6 @@ func main() {
 	}
 	base := db.NewPostStore(config.Server.Dsn)
 	for _, v := range config.Posts {
-		log.Println(v.PublishedAt)
 		base.AddPost(&v)
 	}
 	s := mserver.NewHttpServ(base, config.Admin)
