@@ -62,6 +62,7 @@ func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) 
 	for i, v := range list {
 		posts[i] = types.Post{
 			Author:      v.Author,
+			Title:       v.Title,
 			Content:     v.Content,
 			PublishedAt: v.PublishedAt,
 		}

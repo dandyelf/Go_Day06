@@ -80,8 +80,8 @@ func createHtml(total int, prev int, next int, perPage int, currentPage int, lis
 
 	for _, postList := range list {
 		html.WriteString(`<li>`)
-		html.WriteString(`	<div>` + postList.Author + `</div>`)
-		html.WriteString(`	<div>` + postList.Content + `</div>`)
+		html.WriteString(`	<div><h4>` + postList.Title + `</h4></div>`)
+		html.WriteString(`	<div>` + trimString(postList.Content, 10) + `... </div>`)
 		html.WriteString(`	<div>` + postList.PublishedAt.GoString() + `</div>`)
 		html.WriteString(`</li>`)
 	}
@@ -111,6 +111,14 @@ func AdminPage(w http.ResponseWriter, r *http.Request) {
 	}
 	html := createAdmin()
 	w.Write([]byte(html))
+}
+
+func trimString(str string, n int) string {
+	words := strings.Fields(str)
+	if len(words) > n {
+		words = words[:n]
+	}
+	return strings.Join(words, " ")
 }
 
 func createAdmin() string {
