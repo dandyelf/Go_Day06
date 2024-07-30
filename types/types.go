@@ -6,7 +6,8 @@ type Config struct {
 	Server struct {
 		Dsn string `json:"dsn"`
 	} `json:"server"`
-	Admin Admin `json:"admin"`
+	Admin Admin  `json:"admin"`
+	Posts []Post `json:"posts"`
 }
 
 type Admin struct {

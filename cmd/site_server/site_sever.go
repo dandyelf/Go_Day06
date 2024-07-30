@@ -13,6 +13,9 @@ func main() {
 		log.Fatal(err)
 	}
 	base := db.NewPostStore(config.Server.Dsn)
+	for _, v := range config.Posts {
+		base.AddPost(&v)
+	}
 	s := mserver.NewHttpServ(base, config.Admin)
 	s.ServStart()
 }
