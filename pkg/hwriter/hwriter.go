@@ -13,6 +13,10 @@ type Store interface {
 	GetPosts(limit int, offset int) ([]types.Post, int, error)
 }
 
+func ReadPostPage(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)

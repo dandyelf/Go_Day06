@@ -33,8 +33,13 @@ func (s *mserver) ServStart() {
 	mux.HandleFunc("/admin", s.adminHandler)
 	mux.HandleFunc("/addpost", s.addPostHandler)
 	mux.HandleFunc("/pushpost", jwtkey.CheckAuth(s.pushPostHandler))
+	mux.HandleFunc("/readPost", s.readPostHandler)
 	mux.HandleFunc("/", s.htmlHandler)
 	log.Fatal(http.ListenAndServe(":8888", mux))
+}
+
+func (s *mserver) readPostHandler(w http.ResponseWriter, r *http.Request) {
+	hwriter.ReadPostPage(w, r)
 }
 
 func NewHttpServ(st Store, admin types.Admin) *mserver {
