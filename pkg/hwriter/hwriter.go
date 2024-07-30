@@ -82,7 +82,7 @@ func createHtml(total int, prev int, next int, perPage int, currentPage int, lis
 		html.WriteString(`<li>`)
 		html.WriteString(`	<div><h4>` + postList.Title + `</h4></div>`)
 		html.WriteString(`	<div>` + trimString(postList.Content, 10) + `... </div>`)
-		html.WriteString(`	<div>` + postList.PublishedAt.GoString() + `</div>`)
+		html.WriteString(`	<div>` + postList.PublishedAt.Local().String() + `</div>`)
 		html.WriteString(`</li>`)
 	}
 	lastPage := total/perPage + 1
