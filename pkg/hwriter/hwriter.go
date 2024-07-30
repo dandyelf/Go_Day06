@@ -13,10 +13,62 @@ type Store interface {
 	GetPosts(limit int, offset int) ([]types.Post, int, error)
 }
 
-func ReadPostPage(w http.ResponseWriter, r *http.Request) {
+const (
+	contentlength = 10
+)
 
+func ReadPostPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
+	page := 1
+	if queryPage := r.URL.Query().Get("page"); len(queryPage) != 0 {
+		if pageNum, err := strconv.Atoi(queryPage); err == nil {
+			page = pageNum
+		} else {
+			w.Write([]byte("Page should be a number!"))
+			return
+		}
+	}
+	post, _, _ := store.GetPosts(page, 0)
+	html := ReadPostPageCreate(1, post[0])
+	w.Write([]byte(html))
 }
 
+func ReadPostPageCreate(currentPage int, post types.Post) string {
+	var html strings.Builder
+
+	html.WriteString(`
+<!doctype html>
+<html>
+	<head>
+		<script type="text/javascript" src="http://localhost:8888/static/web-components-bundle.min.js" async="async"></script>
+		<meta charset="utf-8">
+		<title>My blog</title>
+		<meta name="description" content="">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+	</head>
+
+	<body>
+		<style>
+			html {
+				font-family: "Roboto", sans-serif;
+			}
+		</style>
+`)
+	html.WriteString(`<img src="/static/amazing_logo.png" alt="wonderful logo">
+`)
+	html.WriteString(`	<ul><div><h4>` + post.Title + `</h4></div>`)
+	html.WriteString(`	<li><div>` + post.Content + `... </div></li>`)
+	html.WriteString(`	<li><div>` + post.PublishedAt.Local().String() + `</div></li></ul>`)
+	html.WriteString(`	<form method="get" action="/?page=` + strconv.Itoa(currentPage) + `">
+	<md-filled-button type="submit">Назад</md-filled-button>
+	</form><div style="display: flex; gap: 12px; margin: 12px 0">`)
+
+	html.WriteString(`</div>`)
+
+	return html.String()
+}
 func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -32,7 +84,6 @@ func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 			return
 		}
 	}
-
 	perPage := 3
 	if queryPerPage := r.URL.Query().Get("per-page"); len(queryPerPage) != 0 {
 		if perPageNum, err := strconv.Atoi(queryPerPage); err == nil {
@@ -82,10 +133,10 @@ func createHtml(total int, prev int, next int, perPage int, currentPage int, lis
 `)
 	html.WriteString(`<h4>Total: ` + strconv.Itoa(total) + `</h4><ul>`)
 
-	for _, postList := range list {
-		html.WriteString(`<li>`)
+	for n, postList := range list {
+		html.WriteString(`<li><a href="/readpost/?post=` + strconv.Itoa(n) + `">`)
 		html.WriteString(`	<div><h4>` + postList.Title + `</h4></div>`)
-		html.WriteString(`	<div>` + trimString(postList.Content, 10) + `... </div>`)
+		html.WriteString(`	<div>` + trimString(postList.Content, contentlength) + `... </div></a>`)
 		html.WriteString(`	<div>` + postList.PublishedAt.Local().String() + `</div>`)
 		html.WriteString(`</li>`)
 	}
@@ -94,7 +145,7 @@ func createHtml(total int, prev int, next int, perPage int, currentPage int, lis
 		lastPage = lastPage - 1
 	}
 
-	html.WriteString(`<div style="display: flex; gap: 12px; margin: 12px 0">`)
+	html.WriteString(`</ul><div style="display: flex; gap: 12px; margin: 12px 0">`)
 	if prev > 0 {
 		html.WriteString(`<a href="/?page=1"><md-text-button>First</md-text-button></a>`)
 		html.WriteString(`<a href="/?page=` + strconv.Itoa(prev) + `"><md-text-button>Previous</md-text-button></a>`)

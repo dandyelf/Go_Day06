@@ -24,8 +24,6 @@ type mserver struct {
 	store     Store
 }
 
-// https://github.com/rus-sharafiev/go-rest-common/blob/main/spa/handler.go
-
 func (s *mserver) ServStart() {
 	mux := http.NewServeMux()
 	fs := http.FileServer(http.Dir("static/"))
@@ -33,13 +31,13 @@ func (s *mserver) ServStart() {
 	mux.HandleFunc("/admin", s.adminHandler)
 	mux.HandleFunc("/addpost", s.addPostHandler)
 	mux.HandleFunc("/pushpost", jwtkey.CheckAuth(s.pushPostHandler))
-	mux.HandleFunc("/readPost", s.readPostHandler)
+	mux.HandleFunc("/readpost/", s.readPostHandler)
 	mux.HandleFunc("/", s.htmlHandler)
 	log.Fatal(http.ListenAndServe(":8888", mux))
 }
 
 func (s *mserver) readPostHandler(w http.ResponseWriter, r *http.Request) {
-	hwriter.ReadPostPage(w, r)
+	hwriter.ReadPostPageWriter(w, r, s.store)
 }
 
 func NewHttpServ(st Store, admin types.Admin) *mserver {
