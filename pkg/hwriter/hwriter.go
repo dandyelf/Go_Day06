@@ -28,11 +28,11 @@ func ReadPostPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 		}
 	}
 	post, _, _ := store.GetPosts(page, 0)
-	html := ReadPostPageCreate(1, post[0])
+	html := readPostPageCreate(1, post[0])
 	w.Write([]byte(html))
 }
 
-func ReadPostPageCreate(currentPage int, post types.Post) string {
+func readPostPageCreate(currentPage int, post types.Post) string {
 	var html strings.Builder
 
 	html.WriteString(`
@@ -69,6 +69,7 @@ func ReadPostPageCreate(currentPage int, post types.Post) string {
 
 	return html.String()
 }
+
 func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
