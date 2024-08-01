@@ -63,9 +63,9 @@ func readPostPageCreate(currentPage int, post types.Post) string {
 	html.WriteString(`	<ul><div><h4>` + post.Title + `</h4></div>`)
 	html.WriteString(`	<li><div style="max-width: 600px">` + post.Content + `... </div></li>`)
 	html.WriteString(`	<li><div>` + post.PublishedAt.Local().String() + `</div></li></ul>`)
-	html.WriteString(`	<form method="get" action="/?page=` + strconv.Itoa(currentPage) + `">
+	html.WriteString(`	<a href="/?page=` + strconv.Itoa(currentPage) + `">
 	<md-filled-button type="submit">Назад</md-filled-button>
-	</form><div style="display: flex; gap: 12px; margin: 12px 0">`)
+	</a><div style="display: flex; gap: 12px; margin: 12px 0">`)
 
 	html.WriteString(`</div>`)
 
