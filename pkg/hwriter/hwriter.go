@@ -41,7 +41,7 @@ func readPostPageCreate(currentPage int, post types.Post) string {
 	<head>
 		<script type="text/javascript" src="http://localhost:8888/static/web-components-bundle.min.js" async="async"></script>
 		<meta charset="utf-8">
-		<title>My blog</title>
+		<title>Hero blog</title>
 		<meta name="description" content="">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="preconnect" href="https://fonts.googleapis.com">
