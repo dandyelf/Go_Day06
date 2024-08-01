@@ -18,8 +18,9 @@ const (
 )
 
 func ReadPostPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
-	page := 1
-	if queryPage := r.URL.Query().Get("page"); len(queryPage) != 0 {
+	const perPage = 3
+	page := 3
+	if queryPage := r.URL.Query().Get("post"); len(queryPage) != 0 {
 		if pageNum, err := strconv.Atoi(queryPage); err == nil {
 			page = pageNum
 		} else {
@@ -27,8 +28,9 @@ func ReadPostPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 			return
 		}
 	}
-	post, _, _ := store.GetPosts(page, 0)
-	html := readPostPageCreate(1, post[0])
+	post, _, _ := store.GetPosts(1, page)
+
+	html := readPostPageCreate((page+perPage)/perPage, post[0])
 	w.Write([]byte(html))
 }
 
@@ -71,11 +73,6 @@ func readPostPageCreate(currentPage int, post types.Post) string {
 }
 
 func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
 	page := 1
 	if queryPage := r.URL.Query().Get("page"); len(queryPage) != 0 {
 		if pageNum, err := strconv.Atoi(queryPage); err == nil {
@@ -135,7 +132,7 @@ func createHtml(total int, prev int, next int, perPage int, currentPage int, lis
 	html.WriteString(`<h4>Total: ` + strconv.Itoa(total) + `</h4><ul>`)
 
 	for n, postList := range list {
-		html.WriteString(`<li><a href="/readpost/?post=` + strconv.Itoa(n) + `">`)
+		html.WriteString(`<li><a href="/readpost/?post=` + strconv.Itoa(n+(currentPage-1)*perPage) + `">`)
 		html.WriteString(`	<div><h4>` + postList.Title + `</h4></div>`)
 		html.WriteString(`	<div>` + trimString(postList.Content, contentlength) + `... </div></a>`)
 		html.WriteString(`	<div>` + postList.PublishedAt.Local().String() + `</div>`)
