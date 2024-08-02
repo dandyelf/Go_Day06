@@ -1,6 +1,18 @@
 package pages
 
-const mainTmpl = `
+// Total       int
+// Next        int
+// Prev        int
+// PerPage     int
+// CurrentPage int
+// List        []types.Post
+
+// Title       string    `json:"title"`
+// Content     string    `json:"content"`
+// Author      string    `json:"author"`
+// PublishedAt time.Time `json:"published_at"`
+
+const MainTmpl = `
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -22,12 +34,12 @@ const mainTmpl = `
 
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
 
-    <link href="/theme/theme.css" rel="stylesheet">
+    <link href="/static/theme/theme.css" rel="stylesheet">
 
-    <link href="/styles.css" rel="stylesheet">
-    <script src="/index.js" defer></script>
+    <link href="/static/styles.css" rel="stylesheet">
+    <script src="/static/index.js" defer></script>
 
-    <script src="/web-components.js" async></script>
+    <script src="/static/web-components.js" async></script>
 
     <title>Hero Blog</title>
     <meta name="description" content="Hero Blog">
@@ -35,43 +47,52 @@ const mainTmpl = `
 
 <body class="light">
     <header>
-        <img src="/amazing_logo.png" alt="wonderful logo">
+        <img src="/static/amazing_logo.png" alt="wonderful logo">
         <h1>Hero Blog</h1>
     </header>
     <main>
-        <ol start="4">
-            <span>Total: 160</span>
-            <li>
-                <a href="/readpost/?post=0">
-                    <h4>Fighting Corruption</h4>
-                    <div>4 I discover that a powerful businessman is using his... </div>
-                    <span>2006-01-02 18:04:05 +0300 MSK</span>
-                </a>
-            </li>
-            <li>
-                <a href="/readpost/?post=1">
-                    <h4>Searching for Truth</h4>
-                    <div>5 I encounter a mysterious case of people disappearing in... </div>
-                    <span>2006-01-02 18:04:05 +0300 MSK</span>
-                </a>
-            </li>
-            <li>
-                <a href="/readpost/?post=1">
-                    <h4>Searching for Truth</h4>
-                    <div>5 I encounter a mysterious case of people disappearing in... </div>
-                    <span>2006-01-02 18:04:05 +0300 MSK</span>
-                </a>
-            </li>
+        <ol start="{{.FirstItemNum}}">
+            <span>Total: {{.Total}}</span>
+
+			{{range .List}}
+				<li>
+					<a href="/readpost/?post={{.Number}}">
+						<h4>{{.Title}}</h4>
+						<div>{{.Content}}</div>
+						<span>{{.PublishedAt}}</span>
+					</a>
+				</li>
+			{{else}}
+				<div><strong>no rows</strong></div>
+			{{end}}
         </ol>
         <div class="pagination">
-            <md-text-button role="presentation" disabled>First</md-text-button>
-            <md-text-button role="presentation" disabled>Previous</md-text-button>
-            <a href="/?page=3">
-                <md-text-button role="presentation">Next</md-text-button>
-            </a>
-            <a href="/?page=6">
-                <md-text-button role="presentation">Last</md-text-button>
-            </a>
+				{{if .PrevExists}}
+					<a href="/?page=1">
+				{{end}}
+            		<md-text-button {{if .PrevNotExists}}disabled{{end}}>First</md-text-button>
+				{{if .PrevExists}}
+					</a>
+					<a href="/?page={{.Prev}}">
+				{{end}}
+					<md-text-button {{if .PrevNotExists}}disabled{{end}}>Previous</md-text-button>
+				{{if .PrevExists}}
+					</a>
+				{{end}}
+			
+				{{if .NextExists}}
+					<a href="/?page={{.Next}}">
+				{{end}}
+					<md-text-button {{if .NextNotExists}}disabled{{end}}>Next</md-text-button>
+					
+				{{if .NextExists}}
+					</a>
+					<a href="/?page={{.LastPage}}">
+				{{end}}
+					<md-text-button {{if .NextNotExists}}disabled{{end}}>Last</md-text-button>
+				{{if .NextExists}}
+					</a>
+				{{end}}
         </div>
     </main>
 </body>

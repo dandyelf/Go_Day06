@@ -1,11 +1,13 @@
 package hwriter
 
 import (
+	"leftrana/superhero/internal/pages"
 	"leftrana/superhero/types"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"text/template"
 )
 
 type Store interface {
@@ -98,63 +100,54 @@ func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 		w.Write([]byte("400 Invalid page value: " + strconv.Itoa(page)))
 		return
 	}
-	html := createHtml(total, page-1, page+1, perPage, page, list)
 
-	w.Write([]byte(html))
-}
-
-func createHtml(total int, prev int, next int, perPage int, currentPage int, list []types.Post) string {
-	var html strings.Builder
-
-	html.WriteString(`
-<!doctype html>
-<html>
-	<head>
-		<script type="text/javascript" src="http://localhost:8888/static/web-components-bundle.min.js" async="async"></script>
-		<meta charset="utf-8">
-		<title>Hero blog</title>
-		<meta name="description" content="">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-	</head>
-
-	<body>
-		<style>
-			html {
-				font-family: "Roboto", sans-serif;
-			}
-		</style>
-`)
-	html.WriteString(`<img src="/static/amazing_logo.png" alt="wonderful logo">
-`)
-	html.WriteString(`<h4>Total: ` + strconv.Itoa(total) + `</h4><ul>`)
-
-	for n, postList := range list {
-		html.WriteString(`<li><a href="/readpost/?post=` + strconv.Itoa(n+(currentPage-1)*perPage) + `">`)
-		html.WriteString(`	<div><h4>` + postList.Title + `</h4></div>`)
-		html.WriteString(`	<div>` + trimString(postList.Content, contentlength) + `... </div></a>`)
-		html.WriteString(`	<div>` + postList.PublishedAt.Local().String() + `</div>`)
-		html.WriteString(`</li>`)
-	}
 	lastPage := total/perPage + 1
-	if total%perPage == 0 {
-		lastPage = lastPage - 1
+	var listWitNum []types.PostWithNum
+	for n, listItem := range list {
+		listWitNum = append(listWitNum, types.PostWithNum{
+			Number:      n + (page-1)*perPage,
+			Title:       listItem.Title,
+			Content:     trimString(listItem.Content, 10),
+			PublishedAt: listItem.PublishedAt.Local(),
+		})
 	}
 
-	html.WriteString(`</ul><div style="display: flex; gap: 12px; margin: 12px 0">`)
-	if prev > 0 {
-		html.WriteString(`<a href="/?page=1"><md-text-button>First</md-text-button></a>`)
-		html.WriteString(`<a href="/?page=` + strconv.Itoa(prev) + `"><md-text-button>Previous</md-text-button></a>`)
+	data := struct {
+		Total         int
+		Next          int
+		Prev          int
+		PerPage       int
+		CurrentPage   int
+		LastPage      int
+		List          []types.PostWithNum
+		NextExists    bool
+		PrevExists    bool
+		NextNotExists bool
+		PrevNotExists bool
+		FirstItemNum  int
+	}{
+		Total:         total,
+		Next:          page + 1,
+		Prev:          page - 1,
+		PerPage:       perPage,
+		CurrentPage:   page,
+		LastPage:      lastPage,
+		List:          listWitNum,
+		NextExists:    lastPage > page,
+		PrevExists:    page-1 > 0,
+		NextNotExists: !(lastPage > page),
+		PrevNotExists: !(page-1 > 0),
+		FirstItemNum:  page*perPage - 2,
 	}
-	if lastPage > currentPage {
-		html.WriteString(`<a href="/?page=` + strconv.Itoa(next) + `"><md-text-button>Next</md-text-button></a>`)
-		html.WriteString(`<a href="/?page=` + strconv.Itoa(lastPage) + `"><md-text-button>Last</md-text-button></a>`)
-	}
-	html.WriteString(`</div>`)
 
-	return html.String()
+	tmpl, err := template.New("mainPage").Parse(pages.MainTmpl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := tmpl.Execute(w, data); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func AdminPage(w http.ResponseWriter, r *http.Request) {
@@ -181,7 +174,7 @@ func createAdmin() string {
 <!doctype html>
 <html>
 	<head>
-		<script type="text/javascript" src="http://localhost:8888/static/web-components-bundle.min.js" async="async"></script>
+		<script src="/static/web-components.js" async></script>
 		<meta charset="utf-8">
 		<title>Hero blog</title>
 		<meta name="description" content="">
@@ -222,7 +215,7 @@ func createAddPost() string {
 <!doctype html>
 <html>
 	<head>
-		<script type="text/javascript" src="http://localhost:8888/static/web-components-bundle.min.js" async="async"></script>
+    <script src="/static/web-components.js" async></script>
 		<meta charset="utf-8">
 		<title>Hero blog</title>
 		<meta name="description" content="">
@@ -264,7 +257,7 @@ func createPushPost() string {
 <!doctype html>
 <html>
 	<head>
-		<script type="text/javascript" src="http://localhost:8888/static/web-components-bundle.min.js" async="async"></script>
+    <script src="/static/web-components.js" async></script>
 		<meta charset="utf-8">
 		<title>Hero blog</title>
 		<meta name="description" content="">

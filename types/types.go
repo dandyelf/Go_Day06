@@ -38,6 +38,14 @@ type Post struct {
 	PublishedAt time.Time `json:"published_at"`
 }
 
+type PostWithNum struct {
+	Number      int
+	Title       string
+	Content     string
+	Author      string
+	PublishedAt time.Time
+}
+
 type PageData struct {
 	Name        string
 	Total       int
