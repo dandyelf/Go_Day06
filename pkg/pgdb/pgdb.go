@@ -11,6 +11,7 @@ import (
 	"leftrana/superhero/types"
 	"time"
 
+	"github.com/russross/blackfriday"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
@@ -124,7 +125,7 @@ func (ps *postStore) AddEntry(data *types.Post) error {
 	}
 	entry := &Entry{
 		Title:       data.Title,
-		Content:     data.Content,
+		Content:     markdownToHtml(data.Content),
 		Author:      data.Author,
 		PublishedAt: data.PublishedAt,
 	}
@@ -134,4 +135,9 @@ func (ps *postStore) AddEntry(data *types.Post) error {
 	}
 	log.Println("Entry inserted", res)
 	return nil
+}
+
+func markdownToHtml(markdownText string) string {
+	html := blackfriday.MarkdownCommon([]byte(markdownText))
+	return string(html)
 }

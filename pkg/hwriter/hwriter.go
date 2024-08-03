@@ -62,7 +62,7 @@ func readPostPageCreate(currentPage int, post types.Post) string {
 `)
 	html.WriteString(`<img src="/static/amazing_logo.png" alt="wonderful logo">
 `)
-	html.WriteString(`	<ul><div><h4>` + post.Title + `</h4></div>`)
+	html.WriteString(`	<ul><div><h2>` + post.Title + `</h2></div>`)
 	html.WriteString(`	<li><div style="max-width: 600px">` + post.Content + `... </div></li>`)
 	html.WriteString(`	<li><div>` + post.PublishedAt.Local().String() + `</div></li></ul>`)
 	html.WriteString(`	<a href="/?page=` + strconv.Itoa(currentPage) + `">
@@ -107,7 +107,7 @@ func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 		listWitNum = append(listWitNum, types.PostWithNum{
 			Number:      n + (page-1)*perPage,
 			Title:       listItem.Title,
-			Content:     trimString(listItem.Content, 10),
+			Content:     trimString(listItem.Content, contentlength),
 			PublishedAt: listItem.PublishedAt.Local(),
 		})
 	}
@@ -151,10 +151,6 @@ func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 }
 
 func AdminPage(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
 	html := createAdmin()
 	w.Write([]byte(html))
 }
@@ -164,7 +160,7 @@ func trimString(str string, n int) string {
 	if len(words) > n {
 		words = words[:n]
 	}
-	return strings.Join(words, " ")
+	return strings.Join(words, " ") + "..."
 }
 
 func createAdmin() string {

@@ -20,20 +20,43 @@ type Store interface {
 }
 
 type mserver struct {
-	adminUser types.Admin
-	store     Store
+	adminUser   types.Admin
+	store       Store
+	rateLimiter chan struct{}
 }
 
 func (s *mserver) ServStart() {
 	mux := http.NewServeMux()
 	fs := http.FileServer(http.Dir("static/"))
-	mux.Handle("/static/", http.StripPrefix("/static/", fs))
-	mux.HandleFunc("/admin", s.adminHandler)
-	mux.HandleFunc("/addpost", s.addPostHandler)
-	mux.HandleFunc("/pushpost", jwtkey.CheckAuth(s.pushPostHandler))
-	mux.HandleFunc("/readpost/", s.readPostHandler)
-	mux.HandleFunc("/", s.htmlHandler)
+	mux.Handle("/static/", s.limitRateH(http.StripPrefix("/static/", fs)))
+	mux.HandleFunc("/admin/", s.limitRate(s.adminHandler))
+	mux.HandleFunc("/addpost", s.limitRate(s.addPostHandler))
+	mux.HandleFunc("/pushpost", s.limitRate(jwtkey.CheckAuth(s.pushPostHandler)))
+	mux.HandleFunc("/readpost/", s.limitRate(s.readPostHandler))
+	mux.HandleFunc("/", s.limitRate(s.htmlHandler))
 	log.Fatal(http.ListenAndServe(":8888", mux))
+}
+
+func (s *mserver) limitRate(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-s.rateLimiter:
+			next(w, r)
+		default:
+			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+		}
+	}
+}
+
+func (s *mserver) limitRateH(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-s.rateLimiter:
+			next.ServeHTTP(w, r)
+		default:
+			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+		}
+	})
 }
 
 func (s *mserver) readPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +65,18 @@ func (s *mserver) readPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func NewHttpServ(st Store, admin types.Admin) *mserver {
 	s := new(mserver)
+	limiter := make(chan struct{}, 100)
+
+	// Запускаем горутину, которая будет сбрасывать лимитер каждую секунду
+	go func() {
+		for {
+			time.Sleep(1 * time.Second)
+			for i := 0; i < 100; i++ {
+				limiter <- struct{}{} // Заполняем канал
+			}
+		}
+	}()
+	s.rateLimiter = limiter
 	s.store = st
 	s.adminUser = admin
 	return s
