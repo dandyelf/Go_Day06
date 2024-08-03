@@ -97,14 +97,14 @@ func (s *mserver) pushPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	title := query.Get("title")
 	content := query.Get("content")
-	c := markdownToHtml(content)
-	var post types.Post
-	post.Author = "I'm"
-	post.PublishedAt = time.Now()
-	post.Title = title
-	post.Content = c
+
+	s.PushPostOnDb(&types.Post{Author: "I'm", Title: title, Content: content, PublishedAt: time.Now()})
 	hwriter.PushPostPage(w, r)
-	s.createPost(&post)
+}
+
+func (s *mserver) PushPostOnDb(post *types.Post) {
+	post.Content = markdownToHtml(post.Content)
+	s.createPost(post)
 }
 
 func (s *mserver) htmlHandler(w http.ResponseWriter, r *http.Request) {

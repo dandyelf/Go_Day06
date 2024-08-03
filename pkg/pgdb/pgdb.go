@@ -11,7 +11,6 @@ import (
 	"leftrana/superhero/types"
 	"time"
 
-	"github.com/russross/blackfriday"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
@@ -30,14 +29,14 @@ type Entry struct {
 	PublishedAt   time.Time `json:"published_at"`
 }
 
-func NewPostStore(connectStr string) *postStore {
+func NewPostStore(connectStr types.Server) *postStore {
 	store := new(postStore)
-	err := store.DbConnect(connectStr)
+	err := store.DbConnect(connectStr.Dsn)
 	if err != nil {
 		log.Printf("failed to connect to database: %e", err)
 		return nil
 	}
-	store.AddNewTable(true)
+	store.AddNewTable(connectStr.Drop)
 	return store
 }
 
@@ -125,7 +124,7 @@ func (ps *postStore) AddEntry(data *types.Post) error {
 	}
 	entry := &Entry{
 		Title:       data.Title,
-		Content:     markdownToHtml(data.Content),
+		Content:     data.Content,
 		Author:      data.Author,
 		PublishedAt: data.PublishedAt,
 	}
@@ -135,9 +134,4 @@ func (ps *postStore) AddEntry(data *types.Post) error {
 	}
 	log.Println("Entry inserted", res)
 	return nil
-}
-
-func markdownToHtml(markdownText string) string {
-	html := blackfriday.MarkdownCommon([]byte(markdownText))
-	return string(html)
 }

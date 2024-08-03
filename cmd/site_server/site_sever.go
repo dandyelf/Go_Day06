@@ -12,10 +12,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	base := db.NewPostStore(config.Server.Dsn)
-	for _, v := range config.Posts {
-		base.AddPost(&v)
-	}
+	base := db.NewPostStore(config.Server)
 	s := mserver.NewHttpServ(base, config.Admin)
+	for _, v := range config.Posts {
+		s.PushPostOnDb(&v)
+	}
 	s.ServStart()
 }

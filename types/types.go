@@ -3,11 +3,14 @@ package types
 import "time"
 
 type Config struct {
-	Server struct {
-		Dsn string `json:"dsn"`
-	} `json:"server"`
-	Admin Admin  `json:"admin"`
-	Posts []Post `json:"posts"`
+	Server Server `json:"server"`
+	Admin  Admin  `json:"admin"`
+	Posts  []Post `json:"posts"`
+}
+
+type Server struct {
+	Dsn  string `json:"dsn"`
+	Drop bool   `json:"drop"`
 }
 
 type Admin struct {
