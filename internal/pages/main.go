@@ -1,17 +1,5 @@
 package pages
 
-// Total       int
-// Next        int
-// Prev        int
-// PerPage     int
-// CurrentPage int
-// List        []types.Post
-
-// Title       string    `json:"title"`
-// Content     string    `json:"content"`
-// Author      string    `json:"author"`
-// PublishedAt time.Time `json:"published_at"`
-
 const MainTmpl = `
 <!DOCTYPE html>
 <html lang="ru">
@@ -34,12 +22,9 @@ const MainTmpl = `
 
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
 
-    <link href="/static/theme/theme.css" rel="stylesheet">
-
-    <link href="/static/styles.css" rel="stylesheet">
-    <script src="/static/index.js" defer></script>
-
-    <script src="/static/web-components.js" async></script>
+    <link href="/static/css/theme/theme.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
+    <script src="/static/js/web-components.js" async></script>
 
     <title>Hero Blog</title>
     <meta name="description" content="Hero Blog">
@@ -47,10 +32,10 @@ const MainTmpl = `
 
 <body class="light">
     <header>
-        <img src="/static/amazing_logo.png" alt="wonderful logo">
+        <img src="/static/amazing_logo.png" width="100" height="100" alt="wonderful logo">
         <h1>Hero Blog</h1>
     </header>
-    <main>
+    <main class="posts">
         <ol start="{{.FirstItemNum}}">
             <span>Total: {{.Total}}</span>
 

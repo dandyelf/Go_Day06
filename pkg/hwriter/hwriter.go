@@ -32,46 +32,26 @@ func ReadPostPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 	}
 	post, _, _ := store.GetPosts(1, page)
 
-	html := readPostPageCreate((page+perPage)/perPage, post[0])
-	w.Write([]byte(html))
-}
+	data := struct {
+		Title       string
+		Content     string
+		PublishedAt string
+		CurrentPage int
+	}{
+		Title:       post[0].Title,
+		Content:     post[0].Content,
+		PublishedAt: post[0].PublishedAt.Format("Jan 2 2006 15:04:05"),
+		CurrentPage: (page + perPage) / perPage,
+	}
 
-func readPostPageCreate(currentPage int, post types.Post) string {
-	var html strings.Builder
+	tmpl, err := template.New("postPage").Parse(pages.PostTmpl)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	html.WriteString(`
-<!doctype html>
-<html>
-	<head>
-		<script type="text/javascript" src="http://localhost:8888/static/web-components-bundle.min.js" async="async"></script>
-		<meta charset="utf-8">
-		<title>Hero blog</title>
-		<meta name="description" content="">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-	</head>
-
-	<body>
-		<style>
-			html {
-				font-family: "Roboto", sans-serif;
-			}
-		</style>
-`)
-	html.WriteString(`<img src="/static/amazing_logo.png" alt="wonderful logo">
-`)
-	html.WriteString(`	<ul><div><h2>` + post.Title + `</h2></div>`)
-	html.WriteString(`	<li><div style="max-width: 600px">` + post.Content + `... </div></li>`)
-	html.WriteString(`	<li><div>` + post.PublishedAt.Local().String() + `</div></li></ul>`)
-	html.WriteString(`	<a href="/?page=` + strconv.Itoa(currentPage) + `">
-	<md-filled-button type="submit">Назад</md-filled-button>
-	</a><div style="display: flex; gap: 12px; margin: 12px 0">`)
-
-	html.WriteString(`</div>`)
-
-	return html.String()
+	if err := tmpl.Execute(w, data); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
@@ -108,7 +88,7 @@ func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 			Number:      n + (page-1)*perPage,
 			Title:       listItem.Title,
 			Content:     trimString(listItem.Content, contentlength),
-			PublishedAt: listItem.PublishedAt.Local(),
+			PublishedAt: listItem.PublishedAt.Format("Jan 2 2006 15:04:05"),
 		})
 	}
 
@@ -151,8 +131,17 @@ func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 }
 
 func AdminPage(w http.ResponseWriter, r *http.Request) {
-	html := createAdmin()
-	w.Write([]byte(html))
+	// html := createAdmin()
+	// w.Write([]byte(html))
+
+	tmpl, err := template.New("loginPage").Parse(pages.AuthTmpl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := tmpl.Execute(w, nil); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func trimString(str string, n int) string {
@@ -163,120 +152,31 @@ func trimString(str string, n int) string {
 	return strings.Join(words, " ") + "..."
 }
 
-func createAdmin() string {
-	var html strings.Builder
-
-	html.WriteString(`
-<!doctype html>
-<html>
-	<head>
-		<script src="/static/web-components.js" async></script>
-		<meta charset="utf-8">
-		<title>Hero blog</title>
-		<meta name="description" content="">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-	</head>
-
-	<body>
-		<style>
-			html {
-				font-family: "Roboto", sans-serif;
-			}
-		</style>
-
-		<form method="post" action="/addpost">
-			<md-outlined-text-field label="Логин" name="user" required></md-outlined-text-field>
-			<md-outlined-text-field label="Пароль" name="password" type="password" required></md-outlined-text-field>
-			<md-filled-button type="submit">Войти</md-filled-button>
-		<form>
-	</body>
-</html>	
-`)
-	return html.String()
-}
-
 func AddPostPage(w http.ResponseWriter, r *http.Request) {
-	log.Println("post page printed")
-	html := createAddPost()
-	w.Write([]byte(html))
-}
+	// log.Println("post page printed")
+	// html := createAddPost()
+	// w.Write([]byte(html))
 
-func createAddPost() string {
-	var html strings.Builder
+	tmpl, err := template.New("newPostPage").Parse(pages.NewPostTmplt)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	html.WriteString(`
-<!doctype html>
-<html>
-	<head>
-    <script src="/static/web-components.js" async></script>
-		<meta charset="utf-8">
-		<title>Hero blog</title>
-		<meta name="description" content="">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-	</head>
-
-	<body>
-		<style>
-			html {
-				font-family: "Roboto", sans-serif;
-			}
-		</style>
-
-		<div>Пиши</div>
-		<div>пост!</div>
-		<form method="post" action="/pushpost">
-			<md-outlined-text-field label="Название" name="title" required></md-outlined-text-field>
-			<md-outlined-text-field label="Пост" name="content" type="textarea"></md-outlined-text-field>
-			<md-filled-button type="submit">Опубликовать</md-filled-button>
-		</form>
-	</body>
-</html>	
-`)
-	return html.String()
+	if err := tmpl.Execute(w, nil); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func PushPostPage(w http.ResponseWriter, r *http.Request) {
-	html := createPushPost()
-	w.Write([]byte(html))
-}
+	// html := createPushPost()
+	// w.Write([]byte(html))
 
-func createPushPost() string {
-	var html strings.Builder
+	tmpl, err := template.New("postAddedPage").Parse(pages.PostAddedTmpl)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	html.WriteString(`
-<!doctype html>
-<html>
-	<head>
-    <script src="/static/web-components.js" async></script>
-		<meta charset="utf-8">
-		<title>Hero blog</title>
-		<meta name="description" content="">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-	</head>
-
-	<body>
-		<style>
-			html {
-				font-family: "Roboto", sans-serif;
-			}
-		</style>
-
-		<div>Пост</div>
-		<div>добавлен!</div>
-		<form method="get" action="/addpost">
-			<md-filled-button type="submit">Назад</md-filled-button>
-		</form>
-	</body>
-</html>	
-`)
-	return html.String()
+	if err := tmpl.Execute(w, nil); err != nil {
+		log.Fatal(err)
+	}
 }

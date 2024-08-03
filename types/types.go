@@ -46,7 +46,7 @@ type PostWithNum struct {
 	Title       string
 	Content     string
 	Author      string
-	PublishedAt time.Time
+	PublishedAt string
 }
 
 type PageData struct {
