@@ -1,10 +1,10 @@
 package jwtkey
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
@@ -29,17 +29,16 @@ func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 				tknStr = r.URL.Query().Get("jwt")
 				if tknStr == "" {
 					w.WriteHeader(http.StatusUnauthorized)
-					returnError(w, "StatusUnauthorized jwt")
+					ReturnError(w, "StatusUnauthorized jwt")
 					return
 				}
 			} else {
 				w.WriteHeader(http.StatusBadRequest)
-				returnError(w, "StatusBadRequest")
+				ReturnError(w, "StatusBadRequest")
 				return
 			}
 		} else {
 			tknStr = c.Value
-			log.Println(tknStr)
 		}
 		claims := &Claims{}
 		tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (any, error) {
@@ -48,16 +47,16 @@ func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 		if err != nil {
 			if err == jwt.ErrSignatureInvalid {
 				w.WriteHeader(http.StatusUnauthorized)
-				returnError(w, "StatusUnauthorized jwt")
+				ReturnError(w, "StatusUnauthorized jwt")
 				return
 			}
 			w.WriteHeader(http.StatusBadRequest)
-			returnError(w, "StatusBadRequest")
+			ReturnError(w, "StatusBadRequest")
 			return
 		}
 		if !tkn.Valid {
 			w.WriteHeader(http.StatusUnauthorized)
-			returnError(w, "StatusUnauthorized jwt")
+			ReturnError(w, "StatusUnauthorized jwt")
 			return
 		}
 		handler(w, r)
@@ -92,11 +91,57 @@ func signin(w http.ResponseWriter) {
 	})
 }
 
-func returnError(w http.ResponseWriter, errorMessage string) {
-	w.Header().Set("Content-Type", "application/json")
-	errorResponse := map[string]string{"error": errorMessage}
-	err := json.NewEncoder(w).Encode(errorResponse)
-	if err != nil {
-		log.Println("Error create error.")
-	}
+func ReturnError(w http.ResponseWriter, errorMessage string) {
+	html := createErrPost(errorMessage)
+
+	w.Write([]byte(html))
+}
+
+func createErrPost(errorMessage string) string {
+	var html strings.Builder
+	html.WriteString(`
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no, interactive-widget=overlays-content" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta http-equiv='cache-control' content='no-cache'>
+    <meta http-equiv='expires' content='0'>
+    <meta http-equiv='pragma' content='no-cache'>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
+
+    <link href="/static/css/theme/theme.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
+    <script src="/static/js/web-components.js" async></script>
+
+    <title>Hero Blog</title>
+    <meta name="description" content="Hero Blog">
+</head>
+
+<body class="light">
+	<header>
+		<img src="static/images/amazing_logo.png" width="60" height="60" alt="wonderful logo">
+		<div>Hero Blog</div>
+	</header>
+	<main class="pass-incorrect">
+		<div>Login or password incorrect</div>       
+		<a href="/admin">
+			<md-filled-button>Back</md-filled-button>
+		</a>
+	</main>
+</body>
+`)
+	html.WriteString(errorMessage)
+	return html.String()
 }

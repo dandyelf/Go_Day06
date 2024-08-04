@@ -130,14 +130,13 @@ func (s *mserver) addPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := query.Get("user")
 	password := query.Get("password")
-	log.Printf("user want: %v, password want: %v", s.httpOpt.Login, s.httpOpt.Password)
-	log.Printf("user have: %v, password have: %v", user, password)
 	//   TODO
 	if user == s.httpOpt.Login || password == s.httpOpt.Password {
 		jwtkey.JwtCreate(w, r)
 		hwriter.AddPostPage(w, r)
 		return
 	}
+	log.Println("password incorrect try cookie")
 	jwtkey.CheckAuth(hwriter.AddPostPage)(w, r)
 }
 

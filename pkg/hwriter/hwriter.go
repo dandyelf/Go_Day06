@@ -11,7 +11,6 @@ import (
 )
 
 type Store interface {
-	// returns a list of items, a total number of hits and (or) an error in case of one
 	GetPosts(limit int, offset int) ([]types.Post, int, error)
 }
 
@@ -131,9 +130,6 @@ func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 }
 
 func AdminPage(w http.ResponseWriter, r *http.Request) {
-	// html := createAdmin()
-	// w.Write([]byte(html))
-
 	tmpl, err := template.New("loginPage").Parse(pages.AuthTmpl)
 	if err != nil {
 		log.Fatal(err)
@@ -153,10 +149,6 @@ func trimString(str string, n int) string {
 }
 
 func AddPostPage(w http.ResponseWriter, r *http.Request) {
-	// log.Println("post page printed")
-	// html := createAddPost()
-	// w.Write([]byte(html))
-
 	tmpl, err := template.New("newPostPage").Parse(pages.NewPostTmplt)
 	if err != nil {
 		log.Fatal(err)
@@ -168,9 +160,6 @@ func AddPostPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func PushPostPage(w http.ResponseWriter, r *http.Request) {
-	// html := createPushPost()
-	// w.Write([]byte(html))
-
 	tmpl, err := template.New("postAddedPage").Parse(pages.PostAddedTmpl)
 	if err != nil {
 		log.Fatal(err)
