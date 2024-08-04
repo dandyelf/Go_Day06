@@ -4,7 +4,7 @@ import "time"
 
 type Config struct {
 	Server Server `json:"server"`
-	Admin  Admin  `json:"admin"`
+	Admin  Http   `json:"http"`
 	Posts  []Post `json:"posts"`
 }
 
@@ -13,7 +13,8 @@ type Server struct {
 	Drop bool   `json:"drop"`
 }
 
-type Admin struct {
+type Http struct {
+	Port     string
 	Login    string `json:"login"`
 	Password string `json:"password"`
 }

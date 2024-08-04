@@ -3,8 +3,8 @@ package zip
 import (
 	"archive/zip"
 	"errors"
-	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,13 +20,12 @@ func Unzip(dst string, filename string) error {
 
 	for _, f := range archive.File {
 		filePath := filepath.Join(dst, f.Name)
-		fmt.Println("unzipping file ", filePath)
 
 		if !strings.HasPrefix(filePath, filepath.Clean(dst)+string(os.PathSeparator)) {
 			return errors.New("invalid file path")
 		}
 		if f.FileInfo().IsDir() {
-			fmt.Println("creating directory...")
+
 			os.MkdirAll(filePath, os.ModePerm)
 			continue
 		}
@@ -52,5 +51,6 @@ func Unzip(dst string, filename string) error {
 		dstFile.Close()
 		fileInArchive.Close()
 	}
+	log.Println("zip unpacked")
 	return nil
 }

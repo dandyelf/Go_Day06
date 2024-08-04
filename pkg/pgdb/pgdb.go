@@ -127,10 +127,9 @@ func (ps *postStore) AddEntry(data *types.Post) error {
 		Author:      data.Author,
 		PublishedAt: data.PublishedAt,
 	}
-	res, err := ps.db.NewInsert().Model(entry).Exec(context.Background())
+	_, err := ps.db.NewInsert().Model(entry).Exec(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to insert entry: %w", err)
 	}
-	log.Println("Entry inserted", res)
 	return nil
 }

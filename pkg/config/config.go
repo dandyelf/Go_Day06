@@ -19,5 +19,6 @@ func GetConfig(src string) (*types.Config, error) {
 	if err != nil {
 		log.Fatalf("error unmarshalling file: %v", err)
 	}
+	log.Println("config loaded")
 	return config, nil
 }

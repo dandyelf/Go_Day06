@@ -20,7 +20,7 @@ type Store interface {
 }
 
 type mserver struct {
-	adminUser   types.Admin
+	httpOpt     types.Http
 	store       Store
 	rateLimiter chan struct{}
 }
@@ -34,7 +34,7 @@ func (s *mserver) ServStart() {
 	mux.HandleFunc("/pushpost", s.limitRate(jwtkey.CheckAuth(s.pushPostHandler)))
 	mux.HandleFunc("/readpost/", s.limitRate(s.readPostHandler))
 	mux.HandleFunc("/", s.limitRate(s.htmlHandler))
-	log.Fatal(http.ListenAndServe(":8888", mux))
+	log.Fatal(http.ListenAndServe(":"+s.httpOpt.Port, mux))
 }
 
 func (s *mserver) limitRate(next http.HandlerFunc) http.HandlerFunc {
@@ -63,7 +63,7 @@ func (s *mserver) readPostHandler(w http.ResponseWriter, r *http.Request) {
 	hwriter.ReadPostPageWriter(w, r, s.store)
 }
 
-func NewHttpServ(st Store, admin types.Admin) *mserver {
+func NewHttpServ(st Store, opt types.Http) *mserver {
 	s := new(mserver)
 	limiter := make(chan struct{}, 100)
 
@@ -78,7 +78,7 @@ func NewHttpServ(st Store, admin types.Admin) *mserver {
 	}()
 	s.rateLimiter = limiter
 	s.store = st
-	s.adminUser = admin
+	s.httpOpt = opt
 	return s
 }
 
@@ -130,10 +130,10 @@ func (s *mserver) addPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := query.Get("user")
 	password := query.Get("password")
-	log.Printf("user want: %v, password want: %v", s.adminUser.Login, s.adminUser.Password)
+	log.Printf("user want: %v, password want: %v", s.httpOpt.Login, s.httpOpt.Password)
 	log.Printf("user have: %v, password have: %v", user, password)
 	//   TODO
-	if user == s.adminUser.Login || password == s.adminUser.Password {
+	if user == s.httpOpt.Login || password == s.httpOpt.Password {
 		jwtkey.JwtCreate(w, r)
 		hwriter.AddPostPage(w, r)
 		return
