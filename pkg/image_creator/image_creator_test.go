@@ -9,11 +9,13 @@ import (
 const u = "create err"
 
 func TestCreateImage(t *testing.T) {
-	creator, err := image_creator.NewLogoCreator(5, 5)
+	creator, err := image_creator.NewLogoCreator(3, 3)
 	if err != nil {
 		t.Errorf(u)
 	}
 	img := creator.GetLogo()
-	fmt.Println(img)
-
+	have := fmt.Sprintln(img)
+	if len(have) == 0 {
+		t.Error(u)
+	}
 }
