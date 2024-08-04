@@ -34,7 +34,7 @@ func (s *mserver) ServStart() {
 	mux.HandleFunc("/pushpost", s.limitRate(jwtkey.CheckAuth(s.pushPostHandler)))
 	mux.HandleFunc("/readpost/", s.limitRate(s.readPostHandler))
 	mux.HandleFunc("/", s.limitRate(s.htmlHandler))
-	log.Fatal(http.ListenAndServe(":"+s.httpOpt.Port, mux))
+	log.Fatal(http.ListenAndServe(":8888", mux))
 }
 
 func (s *mserver) limitRate(next http.HandlerFunc) http.HandlerFunc {
