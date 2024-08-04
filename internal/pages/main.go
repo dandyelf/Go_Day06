@@ -32,7 +32,7 @@ const MainTmpl = `
 
 <body class="light">
     <header>
-        <img src="/static/amazing_logo.png" width="100" height="100" alt="wonderful logo">
+        <img src="/static/images/amazing_logo.png" width="100" height="100" alt="wonderful logo">
         <h1>Hero Blog</h1>
     </header>
     <main class="posts">

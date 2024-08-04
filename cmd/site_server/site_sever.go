@@ -22,5 +22,6 @@ func main() {
 	for _, v := range config.Posts {
 		s.PushPostOnDb(&v)
 	}
+	log.Println("try to start server on http://localhost:8888, admin page: http://localhost:8888/admin/")
 	s.ServStart()
 }

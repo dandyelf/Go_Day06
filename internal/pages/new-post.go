@@ -32,7 +32,7 @@ const NewPostTmplt = `
 
 <body class="light">
     <header>
-        <img src="/static/amazing_logo.png" width="60" height="60" alt="wonderful logo">
+        <img src="/static/images/amazing_logo.png" width="60" height="60" alt="wonderful logo">
         <div>Hero Blog</div>
     </header>
     <main class="new-post">
