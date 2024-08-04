@@ -2,6 +2,7 @@ package zip
 
 import (
 	"archive/zip"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -9,10 +10,11 @@ import (
 	"strings"
 )
 
-func Unzip(dst string, filename string) {
+func Unzip(dst string, filename string) error {
 	archive, err := zip.OpenReader(filename)
 	if err != nil {
-		panic(err)
+
+		return err
 	}
 	defer archive.Close()
 
@@ -21,8 +23,7 @@ func Unzip(dst string, filename string) {
 		fmt.Println("unzipping file ", filePath)
 
 		if !strings.HasPrefix(filePath, filepath.Clean(dst)+string(os.PathSeparator)) {
-			fmt.Println("invalid file path")
-			return
+			return errors.New("invalid file path")
 		}
 		if f.FileInfo().IsDir() {
 			fmt.Println("creating directory...")
@@ -31,24 +32,25 @@ func Unzip(dst string, filename string) {
 		}
 
 		if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-			panic(err)
+			return err
 		}
 
 		dstFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		fileInArchive, err := f.Open()
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		if _, err := io.Copy(dstFile, fileInArchive); err != nil {
-			panic(err)
+			return err
 		}
 
 		dstFile.Close()
 		fileInArchive.Close()
 	}
+	return nil
 }

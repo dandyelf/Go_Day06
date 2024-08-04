@@ -13,7 +13,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	zip.Unzip("static", "static.zip")
+	err = zip.Unzip("../site_server", "static.zip")
+	if err != nil {
+		log.Fatal(err)
+	}
 	base := db.NewPostStore(config.Server)
 	s := mserver.NewHttpServ(base, config.Admin)
 	for _, v := range config.Posts {
