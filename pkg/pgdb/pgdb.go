@@ -71,7 +71,6 @@ func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) 
 }
 
 func (ps *postStore) AddPost(post *types.Post) error {
-
 	return ps.AddEntry(post)
 }
 
