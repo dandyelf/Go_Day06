@@ -18,7 +18,7 @@ func main() {
 		log.Fatal(err)
 	}
 	base := db.NewPostStore(config.Server)
-	s := mserver.NewHttpServ(base, config.Admin)
+	s := mserver.NewHttpServ(base, config.Http)
 	for _, v := range config.Posts {
 		s.PushPostOnDb(&v)
 	}
