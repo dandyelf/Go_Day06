@@ -20,7 +20,7 @@ const PostTmpl = `
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
 
     <link href="/static/css/theme/theme.css" rel="stylesheet">
     <link href="/static/css/styles.css" rel="stylesheet">
@@ -40,7 +40,10 @@ const PostTmpl = `
         <div>{{.Content}}</div>
         <span>{{.PublishedAt}}</span>
         <a href="/?page={{.CurrentPage}}">
-            <md-filled-button>Back</md-filled-button>
+            <md-filled-button>
+                Back
+                <md-icon slot="icon">arrow_back</md-icon>
+            </md-filled-button>
         </a>
     </main>
 </body>

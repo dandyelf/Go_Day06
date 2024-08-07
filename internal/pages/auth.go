@@ -20,7 +20,7 @@ const AuthTmpl = `
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
 
     <link href="/static/css/theme/theme.css" rel="stylesheet">
     <link href="/static/css/styles.css" rel="stylesheet">
@@ -36,7 +36,10 @@ const AuthTmpl = `
             <span>Authorization</span>
             <md-outlined-text-field type="text" label="Login" name="user" required></md-outlined-text-field>
             <md-outlined-text-field type="password" label="Password" name="password" required></md-outlined-text-field>
-            <md-filled-button type="submit">Submit</md-filled-button>
+            <md-filled-button type="submit">
+                Sign In
+                <md-icon slot="icon">login</md-icon>
+            </md-filled-button>
         </form>
     </main>
 </body>

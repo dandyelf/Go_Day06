@@ -20,7 +20,7 @@ const MainTmpl = `
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
 
     <link href="/static/css/theme/theme.css" rel="stylesheet">
     <link href="/static/css/styles.css" rel="stylesheet">
@@ -30,7 +30,7 @@ const MainTmpl = `
     <meta name="description" content="Hero Blog">
 </head>
 
-<body class="light">
+<body class="light main">
     <header>
         <img src="/static/images/amazing_logo.png" width="100" height="100" alt="wonderful logo">
         <h1>Hero Blog</h1>
@@ -42,7 +42,7 @@ const MainTmpl = `
 			{{range .List}}
 				<li>
 					<a href="/readpost/?post={{.Number}}">
-						<h4>{{.Title}}</h4>
+						<h4>{{.Title}} <md-icon slot="icon">arrow_forward</md-icon></h4>
 						<div>{{.Content}}</div>
 						<span>{{.PublishedAt}}</span>
 					</a>
@@ -55,12 +55,18 @@ const MainTmpl = `
 				{{if .PrevExists}}
 					<a href="/?page=1">
 				{{end}}
-            		<md-text-button {{if .PrevNotExists}}disabled{{end}}>First</md-text-button>
+            		<md-text-button {{if .PrevNotExists}}disabled{{end}}>
+						First
+						<md-icon slot="icon">first_page</md-icon>
+					</md-text-button>
 				{{if .PrevExists}}
 					</a>
 					<a href="/?page={{.Prev}}">
 				{{end}}
-					<md-text-button {{if .PrevNotExists}}disabled{{end}}>Previous</md-text-button>
+					<md-text-button {{if .PrevNotExists}}disabled{{end}}>
+						Previous
+						<md-icon slot="icon">chevron_backward</md-icon>
+					</md-text-button>
 				{{if .PrevExists}}
 					</a>
 				{{end}}
@@ -68,13 +74,18 @@ const MainTmpl = `
 				{{if .NextExists}}
 					<a href="/?page={{.Next}}">
 				{{end}}
-					<md-text-button {{if .NextNotExists}}disabled{{end}}>Next</md-text-button>
-					
+					<md-text-button {{if .NextNotExists}}disabled{{end}} trailing-icon>
+						Next
+						<md-icon slot="icon">chevron_forward</md-icon>
+					</md-text-button>					
 				{{if .NextExists}}
 					</a>
 					<a href="/?page={{.LastPage}}">
 				{{end}}
-					<md-text-button {{if .NextNotExists}}disabled{{end}}>Last</md-text-button>
+					<md-text-button {{if .NextNotExists}}disabled{{end}} trailing-icon>
+						Last
+						<md-icon slot="icon">last_page</md-icon>
+					</md-text-button>
 				{{if .NextExists}}
 					</a>
 				{{end}}
