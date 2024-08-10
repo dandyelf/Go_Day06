@@ -45,13 +45,13 @@ func (logo Logo) GetLogo() image.Image {
 		Dst:  img,
 		Src:  image.NewUniform(color.RGBA{R: 255, A: 255}),
 		Face: truetype.NewFace(f, &truetype.Options{Size: (float64)(logo.height) / 1.3}),
-		Dot:  fixed.P(logo.width/8, logo.height/2), // координаты, где будет нарисована буква "H"
+		Dot:  fixed.P(logo.width/8, logo.height/2),
 	}
 	d2 := &font.Drawer{
 		Dst:  img,
 		Src:  image.NewUniform(color.White),
 		Face: truetype.NewFace(f, &truetype.Options{Size: (float64)(logo.height) / 1.3}),
-		Dot:  fixed.P(logo.width/3, logo.height-logo.height/12), // координаты, где будет нарисована буква "H"
+		Dot:  fixed.P(logo.width/3, logo.height-logo.height/12),
 	}
 	d.DrawString("H")
 	d2.DrawString("R")

@@ -9,7 +9,6 @@ import (
 	// "encoding/json"
 	"fmt"
 	"leftrana/superhero/types"
-	"log/slog"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -17,72 +16,95 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 )
 
-var db *bun.DB
-
-type PostStore struct {
-	// Дополнительные поля, если необходимо
+type postStore struct {
+	db *bun.DB
 }
 
 type Entry struct {
-	bun.BaseModel `bun:"table:anomalies"`
-	ID            int64     `bun:"id,pk,autoincrement"`
+	bun.BaseModel `bun:"table:myblog"`
 	Title         string    `json:"title"`
-	Content       string    `json:"content"`
+	Content       string    `bun:"type:text" json:"content"`
 	Author        string    `json:"author"`
 	PublishedAt   time.Time `json:"published_at"`
 }
 
-func (ps *PostStore) GetPosts(limit int, offset int) ([]types.Post, int, error) {
-	// from := offset*limit - limit + 1
-	list := []types.Post{{Author: "I'm", Content: "Go go gadjet", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "Super hero RULEZZZZ", PublishedAt: time.Now()},
-		{Author: "I'm", Content: "I'm so sad, all stupid things, tsh...", PublishedAt: time.Now()},
+func NewPostStore(connectStr types.Server) *postStore {
+	store := new(postStore)
+	err := store.DbConnect(connectStr.Dsn)
+	if err != nil {
+		log.Printf("failed to connect to database: %e", err)
+		return nil
 	}
-
-	return list, 3, nil
+	store.AddNewTable(connectStr.Drop)
+	return store
 }
 
-func (ps *PostStore) CheckAdminUser(User string, password string) bool {
-	return true
+func (ps *postStore) SelectPage(ctx context.Context, db *bun.DB, limit, offset int) ([]Entry, int, error) {
+	var entries []Entry
+	count, err := db.NewSelect().Model(&entries).Count(ctx)
+	if err != nil {
+		return nil, count, err
+	}
+	if err = ps.db.NewSelect().Model(&entries).Offset(offset).Limit(limit).Scan(ctx); err != nil {
+		return nil, count, err
+	}
+	return entries, count, nil
 }
 
-func (ps *PostStore) AddPost(post types.Post) error {
-
-	return AddEntry(post)
+func (ps *postStore) GetPosts(limit int, offset int) ([]types.Post, int, error) {
+	list, count, err := ps.SelectPage(context.Background(), ps.db, limit, offset)
+	if err != nil {
+		log.Println(err)
+		return nil, count, fmt.Errorf("fail get posts: %w", err)
+	}
+	posts := make([]types.Post, len(list))
+	for i, v := range list {
+		posts[i] = types.Post{
+			Author:      v.Author,
+			Title:       v.Title,
+			Content:     v.Content,
+			PublishedAt: v.PublishedAt,
+		}
+	}
+	return posts, count, nil
 }
 
-// conf PgConf
-func DbConnect(dsn string) error {
+func (ps *postStore) AddPost(post *types.Post) error {
+	return ps.AddEntry(post)
+}
+
+func (ps *postStore) DbConnect(dsn string) error {
 	if dsn == "" {
+		log.Println("default dns")
 		dsn = "postgres://postgres:123@localhost:5432/postgres?sslmode=disable"
 	}
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
-	db = bun.NewDB(sqldb, pgdialect.New())
-	err := db.Ping()
+	ps.db = bun.NewDB(sqldb, pgdialect.New())
+	err := ps.db.Ping()
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 	return nil
 }
 
-func AddNewTable(logger *slog.Logger, drop bool) error {
-	err := db.Ping()
+func (ps *postStore) AddNewTable(drop bool) error {
+	err := ps.db.Ping()
 	if err != nil {
 		return fmt.Errorf("database ping failed: %w", err)
 	}
-	logger.Info("Connected to database")
+	log.Println("Connected to database")
 
 	if drop {
-		err = db.ResetModel(context.Background(), (*Entry)(nil))
+		err = ps.db.ResetModel(context.Background(), (*Entry)(nil))
 		if err != nil {
 
 			return fmt.Errorf("failed to create table: %w", err)
 		}
-		logger.Info("Table droped")
+		log.Println("Table droped")
 
 		return nil
 	}
-	_, err = db.NewCreateTable().
+	_, err = ps.db.NewCreateTable().
 		Model((*Entry)(nil)).
 		IfNotExists().
 		Exec(context.Background())
@@ -93,8 +115,8 @@ func AddNewTable(logger *slog.Logger, drop bool) error {
 	return nil
 }
 
-func AddEntry(data types.Post) error {
-	if db == nil {
+func (ps *postStore) AddEntry(data *types.Post) error {
+	if ps.db == nil {
 		return fmt.Errorf("database connection is not initialized")
 	}
 	entry := &Entry{
@@ -103,10 +125,9 @@ func AddEntry(data types.Post) error {
 		Author:      data.Author,
 		PublishedAt: data.PublishedAt,
 	}
-	res, err := db.NewInsert().Model(entry).Exec(context.Background())
+	_, err := ps.db.NewInsert().Model(entry).Exec(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to insert entry: %w", err)
 	}
-	log.Println("Entry inserted", res)
 	return nil
 }

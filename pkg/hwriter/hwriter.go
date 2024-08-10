@@ -1,18 +1,59 @@
 package hwriter
 
 import (
+	"leftrana/superhero/internal/pages"
 	"leftrana/superhero/types"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"text/template"
 )
 
-func HWriter(w http.ResponseWriter, r *http.Request, GetPosts func(limit int, offset int) ([]types.Post, int, error)) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
+type Store interface {
+	GetPosts(limit int, offset int) ([]types.Post, int, error)
+}
+
+const (
+	contentlength = 10
+)
+
+func ReadPostPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
+	const perPage = 3
+	page := 3
+	if queryPage := r.URL.Query().Get("post"); len(queryPage) != 0 {
+		if pageNum, err := strconv.Atoi(queryPage); err == nil {
+			page = pageNum
+		} else {
+			w.Write([]byte("Page should be a number!"))
+			return
+		}
+	}
+	post, _, _ := store.GetPosts(1, page)
+
+	data := struct {
+		Title       string
+		Content     string
+		PublishedAt string
+		CurrentPage int
+	}{
+		Title:       post[0].Title,
+		Content:     post[0].Content,
+		PublishedAt: post[0].PublishedAt.Format("Jan 2 2006 15:04:05"),
+		CurrentPage: (page + perPage) / perPage,
 	}
 
+	tmpl, err := template.New("postPage").Parse(pages.PostTmpl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := tmpl.Execute(w, data); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func PostsPageWriter(w http.ResponseWriter, r *http.Request, store Store) {
 	page := 1
 	if queryPage := r.URL.Query().Get("page"); len(queryPage) != 0 {
 		if pageNum, err := strconv.Atoi(queryPage); err == nil {
@@ -22,8 +63,7 @@ func HWriter(w http.ResponseWriter, r *http.Request, GetPosts func(limit int, of
 			return
 		}
 	}
-
-	perPage := 10
+	perPage := 3
 	if queryPerPage := r.URL.Query().Get("per-page"); len(queryPerPage) != 0 {
 		if perPageNum, err := strconv.Atoi(queryPerPage); err == nil {
 			perPage = perPageNum
@@ -33,70 +73,99 @@ func HWriter(w http.ResponseWriter, r *http.Request, GetPosts func(limit int, of
 		}
 	}
 
-	list, total, err := GetPosts(perPage, page)
+	list, total, err := store.GetPosts(perPage, (page-1)*perPage)
 
 	if err != nil {
 		w.Write([]byte("400 Invalid page value: " + strconv.Itoa(page)))
 		return
 	}
-	html := createHtml(total, page-1, page+1, perPage, page, list)
 
-	w.Write([]byte(html))
+	lastPage := total/perPage + 1
+	var listWitNum []types.PostWithNum
+	for n, listItem := range list {
+		listWitNum = append(listWitNum, types.PostWithNum{
+			Number:      n + (page-1)*perPage,
+			Title:       listItem.Title,
+			Content:     trimString(listItem.Content, contentlength),
+			PublishedAt: listItem.PublishedAt.Format("Jan 2 2006 15:04:05"),
+		})
+	}
+
+	data := struct {
+		Total         int
+		Next          int
+		Prev          int
+		PerPage       int
+		CurrentPage   int
+		LastPage      int
+		List          []types.PostWithNum
+		NextExists    bool
+		PrevExists    bool
+		NextNotExists bool
+		PrevNotExists bool
+		FirstItemNum  int
+	}{
+		Total:         total,
+		Next:          page + 1,
+		Prev:          page - 1,
+		PerPage:       perPage,
+		CurrentPage:   page,
+		LastPage:      lastPage,
+		List:          listWitNum,
+		NextExists:    lastPage > page,
+		PrevExists:    page-1 > 0,
+		NextNotExists: !(lastPage > page),
+		PrevNotExists: !(page-1 > 0),
+		FirstItemNum:  page*perPage - 2,
+	}
+
+	tmpl, err := template.New("mainPage").Parse(pages.MainTmpl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := tmpl.Execute(w, data); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func createHtml(total int, prev int, next int, perPage int, currentPage int, list []types.Post) string {
-	var html strings.Builder
-
-	html.WriteString(`
-<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<title>Places</title>
-		<meta name="description" content="">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-	</head>
-
-	<body>
-		<style>
-			html {
-				font-family: "Roboto", sans-serif;
-			}
-		</style>
-`)
-
-	html.WriteString(`<h4>Total: ` + strconv.Itoa(total) + `</h4><ul>`)
-
-	for _, restaurant := range list {
-		html.WriteString(`<li>`)
-		html.WriteString(`	<div>` + strconv.FormatInt(restaurant.ID, 10) + `</div>`)
-		html.WriteString(`	<div>` + restaurant.Author + `</div>`)
-		html.WriteString(`	<div>` + restaurant.Content + `</div>`)
-		html.WriteString(`	<div>` + restaurant.PublishedAt.GoString() + `</div>`)
-		html.WriteString(`</li>`)
+func AdminPage(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.New("loginPage").Parse(pages.AuthTmpl)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	lastPage := total / perPage
-
-	html.WriteString(`<div style="display: flex; gap: 12px; margin: 12px 0">`)
-	if prev > 0 {
-		html.WriteString(`<a href="/?page=1">First</a>`)
-		html.WriteString(`<a href="/?page=` + strconv.Itoa(prev) + `">Previous</a>`)
+	if err := tmpl.Execute(w, nil); err != nil {
+		log.Fatal(err)
 	}
-	if lastPage > currentPage {
-		html.WriteString(`<a href="/?page=` + strconv.Itoa(next) + `">Next</a>`)
-		html.WriteString(`<a href="/?page=` + strconv.Itoa(lastPage) + `">Last</a>`)
+}
+
+func trimString(str string, n int) string {
+	words := strings.Fields(str)
+	if len(words) > n {
+		words = words[:n]
 	}
-	html.WriteString(`</div>`)
+	return strings.Join(words, " ") + "..."
+}
 
-	html.WriteString(`
-		</ul>
-	</body>
-</html>
-`)
+func AddPostPage(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.New("newPostPage").Parse(pages.NewPostTmplt)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	return html.String()
+	if err := tmpl.Execute(w, nil); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func PushPostPage(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.New("postAddedPage").Parse(pages.PostAddedTmpl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := tmpl.Execute(w, nil); err != nil {
+		log.Fatal(err)
+	}
 }
