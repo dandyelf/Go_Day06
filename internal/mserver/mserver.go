@@ -1,6 +1,8 @@
 package mserver
 
 import (
+	"context"
+	"fmt"
 	"io"
 	"leftrana/superhero/pkg/hwriter"
 	"leftrana/superhero/pkg/jwtkey"
@@ -8,13 +10,15 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/russross/blackfriday"
 )
 
 type Store interface {
-	// returns a list of items, a total number of hits and (or) an error in case of one
 	GetPosts(limit int, offset int) ([]types.Post, int, error)
 	AddPost(post *types.Post) error
 }
@@ -34,7 +38,43 @@ func (s *mserver) ServStart() {
 	mux.HandleFunc("/pushpost", s.limitRate(jwtkey.CheckAuth(s.pushPostHandler)))
 	mux.HandleFunc("/readpost/", s.limitRate(s.readPostHandler))
 	mux.HandleFunc("/", s.limitRate(s.htmlHandler))
-	log.Fatal(http.ListenAndServe(":"+s.httpOpt.Port, mux))
+	srv := &http.Server{Addr: ":" + s.httpOpt.Port, Handler: mux}
+	log.Println("##### press \"q\" + enter for exit #####")
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe: %v", err)
+		}
+		log.Println("Exit sever rutine...")
+	}()
+
+	// Канал для сигналов
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+	done := make(chan struct{})
+	go func() {
+		var input string
+		for {
+			fmt.Scanln(&input)
+			if input == "q" {
+				log.Println("Shutting down server...")
+				close(done)
+				break
+			}
+		}
+	}()
+	select {
+	case <-signalChan:
+		log.Println("Received shutdown signal, shutting down server...")
+	case <-done:
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server Shutdown: %v", err)
+	}
+	log.Println("Server exited gracefully")
 }
 
 func (s *mserver) limitRate(next http.HandlerFunc) http.HandlerFunc {
@@ -66,13 +106,11 @@ func (s *mserver) readPostHandler(w http.ResponseWriter, r *http.Request) {
 func NewHttpServ(st Store, opt types.Http) *mserver {
 	s := new(mserver)
 	limiter := make(chan struct{}, 100)
-
-	// Запускаем горутину, которая будет сбрасывать лимитер каждую секунду
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
 			for i := 0; i < 100; i++ {
-				limiter <- struct{}{} // Заполняем канал
+				limiter <- struct{}{}
 			}
 		}
 	}()

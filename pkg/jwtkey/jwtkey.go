@@ -134,10 +134,13 @@ func createErrPost(errorMessage string) string {
 		<img src="static/images/amazing_logo.png" width="60" height="60" alt="wonderful logo">
 		<div>Hero Blog</div>
 	</header>
-	<main class="pass-incorrect">
+	<main class="post-added">
 		<div>Login or password incorrect</div>       
 		<a href="/admin">
-			<md-filled-button>Back</md-filled-button>
+			<md-filled-button>
+                Back
+                <md-icon slot="icon">arrow_back</md-icon>
+            </md-filled-button>
 		</a>
 	</main>
 </body>

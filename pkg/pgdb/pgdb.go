@@ -17,7 +17,6 @@ import (
 )
 
 type postStore struct {
-	// Дополнительные поля, если необходимо
 	db *bun.DB
 }
 
@@ -74,7 +73,6 @@ func (ps *postStore) AddPost(post *types.Post) error {
 	return ps.AddEntry(post)
 }
 
-// conf PgConf
 func (ps *postStore) DbConnect(dsn string) error {
 	if dsn == "" {
 		log.Println("default dns")

@@ -6,3 +6,6 @@ ex00:
 
 ex01-02:
 	cd ./cmd/site_server && go run .
+
+clean:
+	rm -rf ./cmd/site_server/static

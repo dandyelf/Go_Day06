@@ -26,8 +26,8 @@ const AuthTmpl = `
     <link href="/static/css/styles.css" rel="stylesheet">
     <script src="/static/js/web-components.js" async></script>
 
-    <title>Add new post</title>
-    <meta name="description" content="Add new post">
+    <title>Authorization</title>
+    <meta name="description" content="Authorization">
 </head>
 
 <body class="light">

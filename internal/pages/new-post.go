@@ -26,8 +26,8 @@ const NewPostTmplt = `
     <link href="/static/css/styles.css" rel="stylesheet">
     <script src="/static/js/web-components.js" async></script>
 
-    <title>Hero Blog</title>
-    <meta name="description" content="Hero Blog">
+    <title>Hero Blog | Add new post</title>
+    <meta name="description" content="Hero Blog | Add new post">
 </head>
 
 <body class="light">
